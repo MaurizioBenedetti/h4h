@@ -74,12 +74,12 @@ class DeviceType(models.Model):
 
 class Response(models.Model):
 
-    time = models.DateTimeField(auto_now_add=True)
+    timestamp = models.DateTimeField(auto_now_add=True)
     respondent = models.ForeignKey('Respondent')
     raw_response = models.CharField(max_length=500)
-    response_language = models.ForeignKey('Language')
     question = models.ForeignKey('Question')
     survey = models.ForeignKey('Survey')
+    language = models.ForeignKey('Language')
     session_id = models.CharField(max_length=256)
 
     def __unicode__(self):
@@ -148,8 +148,10 @@ class QuestionMetric(models.Model):
         return str(self.id)
 
 
+
 class MetricResponse(models.Model):
 
+    timestamp = models.DateTimeField()
     response = models.ForeignKey('Response')
     metric = models.ForeignKey('Metric')
     value = models.DecimalField(decimal_places=2, max_digits=4)
