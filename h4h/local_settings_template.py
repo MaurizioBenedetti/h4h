@@ -1,4 +1,6 @@
 LOCAL_SETTINGS = True
+from settings import *
+import os
 
 # Database settings
 DATABASES = {
