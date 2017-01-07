@@ -14,7 +14,7 @@ class Respondent(models.Model):
     respondent_id = models.CharField(max_length=256, primary_key=True)
     location = models.CharField(max_length=100)
     location_type = models.ForeignKey('LocationType')
-    language = models.ForeignKey('Languages')
+    respondent_language = models.ForeignKey('Language')
     device_type = models.ForeignKey('DeviceType', blank=True, null=True)
     gender = models.CharField(max_length=5, choices=GENDERS, blank=True, null=True)
     age = models.IntegerField(blank=True, null=True)
@@ -28,9 +28,9 @@ class Respondent(models.Model):
         return str(self.respondent_id)
 
 
-class Languages(models.Model):
+class Language(models.Model):
 
-   language = models.CharField(max_length=20)
+    language = models.CharField(max_length=20)
 
     def __unicode__(self):
         return unicode(self.language)
@@ -77,28 +77,104 @@ class Response(models.Model):
     time = models.DateTimeField(auto_now_add=True)
     respondent = models.ForeignKey('Respondent')
     raw_response = models.CharField(max_length=500)
-    language = models.ForeignKey('Language')
+    response_language = models.ForeignKey('Language')
     question = models.ForeignKey('Question')
     survey = models.ForeignKey('Survey')
     session_id = models.CharField(max_length=256)
 
+    def __unicode__(self):
+        return unicode(self.id)
 
-class Question(models.Model):
-
-    pass
+    def __str__(self):
+        return str(self.id)
 
 
 class Survey(models.Model):
 
-    pass
+    geo_scope = models.CharField(max_length = 100)
+    survey_round = models.IntegerField(blank=True, null=True)
+    name = models.CharField(max_length = 100)
+    description = models.CharField(blank=True, null=True, max_length=300)
+    survey_type = models.CharField(max_length=256)
+    questions = models.ForeignKey('Question')
+
+    def __unicode__(self):
+        return unicode(self.id)
+
+    def __str__(self):
+        return str(self.id)
 
 
 class Metric(models.Model):
 
-    pass
+    metric_name = models.CharField(max_length=100)
+    metric_type = models.CharField(max_length=100)
+
+    def __unicode__(self):
+        return unicode(self.id)
+
+    def __str__(self):
+        return str(self.id)
+
 
 class MetricResponse(models.Model):
 
     response = models.ForeignKey('Response')
     metric = models.ForeignKey('Metric')
-    value = models.DecimalField()
+    value = models.DecimalField(decimal_places=2, max_digits=4)
+
+    def __unicode__(self):
+        return unicode(self.id)
+
+    def __str__(self):
+        return str(self.id)
+
+
+class Label(models.Model):
+
+    label = models.CharField(max_length=20)
+
+    def __unicode__(self):
+        return unicode(self.id)
+
+    def __str__(self):
+        return str(self.id)
+
+
+class Question(models.Model):
+
+    question_id = models.CharField(max_length=256, primary_key=True)
+    question_text = models.CharField(max_length=500)
+    question_label = models.ForeignKey('Label')
+    base_language = models.CharField(max_length=100)
+    question_type = models.ForeignKey('QuestionType')
+    metric = models.ForeignKey('Metric')
+
+    def __unicode__(self):
+        return unicode(self.question_id)
+
+    def __str__(self):
+        return str(self.question_id)
+
+
+class QuestionType(models.Model):
+
+    question_type = models.CharField(max_length=100)
+
+    def __unicode__(self):
+        return unicode(self.id)
+
+    def __str__(self):
+        return str(self.id)
+
+
+class SurveyLabel(models.Model):
+
+    label_key = models.ForeignKey('Label')
+    survey_key = models.ForeignKey('Survey')
+
+    def __unicode__(self):
+        return unicode(self.id)
+
+    def __str__(self):
+        return str(self.id)
