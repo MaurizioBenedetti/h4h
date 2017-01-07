@@ -14,3 +14,6 @@ admin.site.register(models.Question, admin.ModelAdmin)
 admin.site.register(models.QuestionType, admin.ModelAdmin)
 admin.site.register(models.SurveyLabel, admin.ModelAdmin)
 admin.site.register(models.Occupation, admin.ModelAdmin)
+admin.site.register(models.QuestionMetric, admin.ModelAdmin)
+admin.site.register(models.SurveyQuestion, admin.ModelAdmin)
+

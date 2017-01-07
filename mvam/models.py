@@ -88,15 +88,37 @@ class Response(models.Model):
     def __str__(self):
         return str(self.id)
 
+class Locations(models.Model):
+    location = models.CharField(max_length=100)
+    def __unicode__(self):
+        return unicode(self.id)
+    def __str__(self):
+        return str(self.id)
+
+class SurveyType(models.Model):
+    survey_type = model.CharField(max_length=100)
+
+    def __unicode__(self):
+        return unicode(self.id)
+    def __str__(self):
+        return str(self.id)
 
 class Survey(models.Model):
-
-    geo_scope = models.CharField(max_length = 100)
+    geo_scope = models.ForeignKey('Locations')
     survey_round = models.IntegerField(blank=True, null=True)
-    name = models.CharField(max_length = 100)
+    name = models.CharField(max_length=100)
     description = models.CharField(blank=True, null=True, max_length=300)
-    survey_type = models.CharField(max_length=256)
-    questions = models.ForeignKey('Question')
+    survey_type = models.ForeignKey('SurveyType') #foreign key to survey types
+
+    def __unicode__(self):
+        return unicode(self.id)
+
+    def __str__(self):
+        return str(self.id)
+
+class SurveyQuestion(models.Model):
+    survey = models.ForeignKey('Survey')
+    question = models.ForeignKey('Question')
 
     def __unicode__(self):
         return unicode(self.id)
@@ -106,11 +128,20 @@ class Survey(models.Model):
 
 
 class Metric(models.Model):
-
+    
     metric_name = models.CharField(max_length=100)
-    metric_type = models.CharField(max_length=100)
 
     def __unicode__(self):
+        return unicode(self.id)
+
+    def __str__(self):
+        return str(self.id)
+
+class QuestionMetric(models.Model):
+    metric = models.ForeignKey('Metric')
+    question = models.ForeignKey('Question')
+
+     def __unicode__(self):
         return unicode(self.id)
 
     def __str__(self):
@@ -148,7 +179,6 @@ class Question(models.Model):
     question_label = models.ForeignKey('Label')
     base_language = models.CharField(max_length=100)
     question_type = models.ForeignKey('QuestionType')
-    metric = models.ForeignKey('Metric')
 
     def __unicode__(self):
         return unicode(self.question_id)
