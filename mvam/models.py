@@ -3,7 +3,6 @@ from __future__ import unicode_literals
 from django.db import models
 
 
-# Create your models here.
 class Respondent(models.Model):
 
     GENDERS = (
@@ -32,12 +31,30 @@ class LocationType(models.Model):
 
     model = models.CharField(max_length=20)
 
+    def __unicode__(self):
+        return unicode(self.model)
+
+    def __str__(self):
+        return str(self.model)
+
 
 class Occupation(models.Model):
 
     occupation = models.CharField(max_length=20)
 
+    def __unicode__(self):
+        return unicode(self.occupation)
+
+    def __str__(self):
+        return str(self.occupation)
+
 
 class DeviceType(models.Model):
 
     device_type = models.CharField(max_length=20)
+
+    def __unicode__(self):
+        return unicode(self.device_type)
+
+    def __str__(self):
+        return str(self.device_type)
