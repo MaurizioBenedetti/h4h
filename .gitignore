@@ -4,3 +4,7 @@ h4h/local_settings.py
 db.sqlite3
 *.pyc
 */migrations/*
+# Elastic Beanstalk Files
+.elasticbeanstalk/*
+!.elasticbeanstalk/*.cfg.yml
+!.elasticbeanstalk/*.global.yml
