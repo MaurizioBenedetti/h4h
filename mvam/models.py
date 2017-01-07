@@ -77,15 +77,9 @@ class Response(models.Model):
     timestamp = models.DateTimeField(auto_now_add=True)
     respondent = models.ForeignKey('Respondent')
     raw_response = models.CharField(max_length=500)
-<<<<<<< Updated upstream
-    response_language = models.ForeignKey('Language')
     question = models.ForeignKey('Question')
     survey = models.ForeignKey('Survey')
-=======
     language = models.ForeignKey('Language')
-    question = models.ForeignKey('Question', blank=True, null=True)
-    survey = models.ForeignKey('Survey', blank=True, null=True)
->>>>>>> Stashed changes
     session_id = models.CharField(max_length=256)
 
     def __unicode__(self):
