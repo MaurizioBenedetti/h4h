@@ -131,7 +131,7 @@ if 'AWS_CLOUDWATCH_HOME' in os.environ:
             'NAME': 'h4h',
             'USER': 'root',
             'PASSWORD': 'mypassword',
-            'HOST': 'h4h-mysql-1.cl8rpquulp3c.us-east-1.rds.amazonaws.com',
+            'HOST': 'aa149qadagdgasl.cl8rpquulp3c.us-east-1.rds.amazonaws.com',
             'PORT': 3306,
         }
     }
