@@ -148,7 +148,6 @@ class QuestionMetric(models.Model):
         return str(self.id)
 
 
-
 class MetricResponse(models.Model):
 
     timestamp = models.DateTimeField()
@@ -204,6 +203,33 @@ class SurveyLabel(models.Model):
 
     label_key = models.ForeignKey('Label')
     survey_key = models.ForeignKey('Survey')
+
+    def __unicode__(self):
+        return unicode(self.id)
+
+    def __str__(self):
+        return str(self.id)
+
+class SurveyQuestionRule(models.Model):
+
+    survey_question = models.ForeignKey('SurveyQuestion')
+    next_question = models.ForeignKey('Question')
+    rules_priority = models.CharField(max_length=2)
+    is_active = models.BooleanField()
+
+    def __unicode__(self):
+        return unicode(self.id)
+
+    def __str__(self):
+        return str(self.id)
+
+
+class SurveyQuestionRulesArgument(models.Model):
+
+    survey_question_rules = models.ForeignKey('SurveyQuestionRule')
+    args_metric = models.ForeignKey('Metric')
+    args_operator = models.CharField(max_length=10)
+    args_value = models.CharField(max_length=10)
 
     def __unicode__(self):
         return unicode(self.id)
