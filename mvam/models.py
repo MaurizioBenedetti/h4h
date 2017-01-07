@@ -96,7 +96,7 @@ class Locations(models.Model):
         return str(self.id)
 
 class SurveyType(models.Model):
-    survey_type = model.CharField(max_length=100)
+    survey_type = models.CharField(max_length=100)
 
     def __unicode__(self):
         return unicode(self.id)
@@ -128,7 +128,7 @@ class SurveyQuestion(models.Model):
 
 
 class Metric(models.Model):
-    
+
     metric_name = models.CharField(max_length=100)
 
     def __unicode__(self):
@@ -141,7 +141,7 @@ class QuestionMetric(models.Model):
     metric = models.ForeignKey('Metric')
     question = models.ForeignKey('Question')
 
-     def __unicode__(self):
+    def __unicode__(self):
         return unicode(self.id)
 
     def __str__(self):
