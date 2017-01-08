@@ -4,6 +4,12 @@ from rest_framework import serializers
 from . import models
 
 
+class DeviceTypeSerializer(ModelSerializer):
+
+    class Meta:
+        model = models.DeviceType
+
+
 class RespondentSerializer(ModelSerializer):
 
     class Meta:
@@ -32,12 +38,6 @@ class OccupationSerializer(ModelSerializer):
         fields = '__all__'
 
 
-class DeviceTypeSerializer(ModelSerializer):
-
-    class Meta:
-        model = models.DeviceType
-
-
 class ResponseSerializer(ModelSerializer):
 
     class Meta:
@@ -51,19 +51,6 @@ class LocationsSerializer(ModelSerializer):
         model = models.Locations
         fields = '__all__'
 
-
-class SurveyTypeSerializer(ModelSerializer):
-
-    class Meta:
-        model = models.SurveyType
-        fields = '__all__'
-
-
-class SurveySerializer(ModelSerializer):
-
-    class Meta:
-        model = models.Survey
-        fields = '__all__'
 
 
 class MetricResponseSerializer(ModelSerializer):
@@ -126,8 +113,36 @@ class QuestionLabelSerializer(ModelSerializer):
         fields = '__all__'
 
 
-class MetricTypeSerializer(ModelSerializer):
+class SurveyTypeSerializer(ModelSerializer):
 
     class Meta:
-        model = models.MetricType
+        model = models.SurveyType
+        fields = '__all__'
+
+
+class SurveySerializer(ModelSerializer):
+
+    class Meta:
+        model = models.Survey
+        fields = '__all__'
+
+
+class SurveyQuestionSerializer(ModelSerializer):
+
+    class Meta:
+        model = models.SurveyQuestion
+        fields = '__all__'
+
+
+class SurveyQuestionRuleSerializer(ModelSerializer):
+
+    class Meta:
+        model = models.SurveyQuestionRule
+        fields = '__all__'
+
+
+class SurveyQuestionRulesArgumentSerializer(ModelSerializer):
+
+    class Meta:
+        model = models.SurveyQuestionRulesArgument
         fields = '__all__'

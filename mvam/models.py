@@ -44,7 +44,7 @@ class Locations(models.Model):
 
     def __str__(self):
         return str(self.location)
-    
+
 
 class LocationType(models.Model):
 
@@ -55,17 +55,6 @@ class LocationType(models.Model):
 
     def __str__(self):
         return str(self.location_type)
-
-
-class Occupation(models.Model):
-
-    occupation = models.CharField(max_length=20)
-
-    def __unicode__(self):
-        return unicode(self.occupation)
-
-    def __str__(self):
-        return str(self.occupation)
 
 
 class Metric(models.Model):
@@ -111,6 +100,17 @@ class MetricResponse(models.Model):
 
     def __str__(self):
         return str(self.id)
+
+
+class Occupation(models.Model):
+
+    occupation = models.CharField(max_length=20)
+
+    def __unicode__(self):
+        return unicode(self.occupation)
+
+    def __str__(self):
+        return str(self.occupation)
 
 
 class Operator(models.Model):
