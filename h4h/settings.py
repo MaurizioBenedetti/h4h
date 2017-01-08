@@ -12,8 +12,6 @@ https://docs.djangoproject.com/en/1.10/ref/settings/
 
 import os
 
-print os.environ
-
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -126,15 +124,15 @@ USE_TZ = True
 STATIC_URL = '/static/'
 STATIC_ROOT = 'static'
 
-if 'RDS_HOSTNAME' in os.environ:
+if 'AWS_CLOUDWATCH_HOME' in os.environ:
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.mysql',
-            'NAME': os.environ['RDS_DB_NAME'],
-            'USER': os.environ['RDS_USERNAME'],
-            'PASSWORD': os.environ['RDS_PASSWORD'],
-            'HOST': os.environ['RDS_HOSTNAME'],
-            'PORT': os.environ['RDS_PORT'],
+            'NAME': 'h4h',
+            'USER': 'root',
+            'PASSWORD': 'mypassword',
+            'HOST': 'aa149qadagdgasl.cl8rpquulp3c.us-east-1.rds.amazonaws.com',
+            'PORT': 3306,
         }
     }
 else:
