@@ -91,9 +91,9 @@ class MetricResponse(models.Model):
     timestamp = models.DateTimeField()
     response = models.ForeignKey('Response')
     metric = models.ForeignKey('Metric')
-    numeric_value = models.DecimalField(decimal_places=3, max_digits=4, blank=True, null=True)
+    numeric_value = models.DecimalField(decimal_places=3, max_digits=10, blank=True, null=True)
     text_value = models.CharField(max_length=50, blank=True, null=True)
-    confidence = models.DecimalField(decimal_places=3, max_digits=4, blank=True, null=True)
+    confidence = models.DecimalField(decimal_places=3, max_digits=10, blank=True, null=True)
 
     def __unicode__(self):
         return unicode(self.id)

@@ -25,7 +25,7 @@ def score_response(response):
     all_sq_rules = models.SurveyQuestionRule.objects.filter(survey_question=survey_question)
 
     # sift out inactive SurveyQuestionRules
-    active sq_rules = []
+    active_sq_rules = []
     for rule in all_sq_rules:
         if rule["is_active"]:
             active_sq_rules.append(rule)
