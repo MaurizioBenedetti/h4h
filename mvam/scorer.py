@@ -4,6 +4,8 @@ from rest_framework.exceptions import ValidationError, ParseError
 
 def get_question_rules(question):
 
+    print question
+
     return models.SurveyQuestionRule.objects.filter(
         survey_question=question
     )
@@ -29,6 +31,7 @@ def score_response(response):
         'message': 'Thanks for your input! Check back soon!'
     }
 
+
     survey_question = response['question']['question_id']
     question = response['question']['question_id'].question
 
@@ -36,6 +39,7 @@ def score_response(response):
     # sift out inactive SurveyQuestionRules
     active_rules = []
     for rule in get_question_rules(survey_question):
+        print rule
         if rule.is_active:
             active_rules.append(rule)
 
@@ -43,10 +47,11 @@ def score_response(response):
         return TERMINATE
 
     potentials = []
+
     for rule in active_rules:
-
+        print rule
         args = get_question_rules_args(rule)
-
+        print args
         for arg in args:
             for _metric in response['question']['metrics']:
 
@@ -58,7 +63,7 @@ def score_response(response):
                 if _metric["metric_id"] == arg.metric.id:
 
                     if metric.metric_type.format == 'N':
-
+                        print 'numeric'
                         if arg.operator.operator == ">":
                             if _metric["metric_value"] > arg.value:
                                 potentials.append(rule)

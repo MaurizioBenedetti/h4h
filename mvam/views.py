@@ -38,6 +38,8 @@ class HandleResponse(APIView):
 
     def is_valid_request(self, request):
 
+        print request.data
+
         try:
             _ = request.data['respondent']['respondent_id']
             _ = request.data['timestamp']
@@ -117,15 +119,10 @@ class HandleResponse(APIView):
 
     def parse_request(self, request):
 
-        parsed_request = request.data
+        parsed_request = request.data.copy()
         parsed_request['respondent'] = self.get_respondent(request)
         try:
             parsed_request['question']['question_id'] = self.get_survey_question(request)
-        except KeyError:
-            pass
-
-        try:
-            parsed_request['survey'] = self.get_survey(request.data)
         except KeyError:
             pass
 
@@ -220,13 +217,23 @@ class HandleResponse(APIView):
 
         return formatted_metrics
 
+    def get_first_survey_question(self, survey):
+
+        return models.SurveyQuestion.objects.filter(
+            survey=survey,
+            question=survey.first_question
+        )[0]
+
     def get_first_question(self, survey, request):
 
-        language = self.get_language(request.data)
-        language_type = self.get_location_type(request.data)
-        device_type = self.get_device_type(request.data)
 
-        response = request.data
+        language = self.get_language(request)
+        language_type = self.get_location_type(request)
+        device_type = self.get_device_type(request)
+
+        first_question = self.get_first_survey_question(survey)
+
+        response = request.copy()
         response['respondent'] = {
             'respondent_id': response['respondent'].respondent_id,
             'location': response['respondent'].location.location,
@@ -236,9 +243,9 @@ class HandleResponse(APIView):
         }
         response['raw_response'] = None
         response['question'] = {
-            'question_id': survey.first_question.id,
-            'question_text': survey.first_question.text,
-            'metrics': self.get_question_metrics(survey.first_question)
+            'question_id': first_question.id,
+            'question_text': first_question.question.text,
+            'metrics': self.get_question_metrics(first_question.question)
         }
 
         return response
@@ -276,7 +283,7 @@ class HandleResponse(APIView):
             id=settings.LOCATION_QUESTION_METRIC
         )
 
-        response = request.data
+        response = request.data.copy()
         response['respondent'] = {
             'respondent_id': response['respondent']['respondent_id'],
             'location': None,
@@ -284,6 +291,7 @@ class HandleResponse(APIView):
             'language': language,
             'device_type': device_type,
         }
+        response['location_flow'] = True
         response['raw_response'] = None
         response['question'] = {
             'question_id': location_question.id,
@@ -298,10 +306,10 @@ class HandleResponse(APIView):
     def has_location(self, request):
 
         location_in_request = (
-            'location' in request.data.keys()
-            and 'location_type' in request.data.keys()
-            and request.data['location'] is not None
-            and request.data['location_type'] is not None
+            'location' in request.data['respondent'].keys()
+            and 'location_type' in request.data['respondent'].keys()
+            and request.data['respondent']['location'] is not None
+            and request.data['respondent']['location_type'] is not None
         )
 
         if location_in_request:
@@ -334,6 +342,17 @@ class HandleResponse(APIView):
 
         return response
 
+    def is_location_flow(self, request):
+
+        try:
+            if request.data['location_flow']:
+                return True
+        except KeyError:
+            return False
+        except AttributeError:
+            return False
+        return False
+
     def post(self, request):
 
         if not self.is_valid_request(request):
@@ -347,6 +366,18 @@ class HandleResponse(APIView):
 
         parsed_request = self.parse_request(request)
 
+        # handle response to geo question
+
+        if self.is_location_flow(request) and self.has_location(request):
+            parsed_request['location_flow'] = False
+            survey = self.get_next_survey(parsed_request['respondent'])
+            if type(survey) is not models.Survey:
+                return Response(self.get_termination(survey, parsed_request))
+            return Response(self.get_first_question(
+                survey,
+                parsed_request
+            ))
+
         # is this a new survey
         if self.is_new_survey(request):
             # determine which survey to return
@@ -356,7 +387,7 @@ class HandleResponse(APIView):
 
             return Response(self.get_first_question(
                 survey,
-                request
+                parsed_request
             ))
 
         # if it isn't a new question, but we didn't get any response

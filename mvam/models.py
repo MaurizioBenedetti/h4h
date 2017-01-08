@@ -117,10 +117,10 @@ class Operator(models.Model):
     operator = models.CharField(max_length=1)
 
     def __unicode__(self):
-        return unicode(self.id)
+        return unicode(self.operator)
 
     def __str__(self):
-        return str(self.id)
+        return str(self.operator)
 
 
 class Question(models.Model):
@@ -153,10 +153,10 @@ class QuestionMetric(models.Model):
     question = models.ForeignKey('Question')
 
     def __unicode__(self):
-        return unicode(self.id)
+        return unicode(self.metric.metric_name + ' - ' + self.question.title)
 
     def __str__(self):
-        return str(self.id)
+        return str(self.metric.metric_name + ' - ' + self.question.title)
 
 
 class Respondent(models.Model):
@@ -213,10 +213,10 @@ class Survey(models.Model):
     first_question = models.ForeignKey('Question', blank=True, null=True)
 
     def __unicode__(self):
-        return unicode(self.id)
+        return unicode(self.name)
 
     def __str__(self):
-        return str(self.id)
+        return str(self.name)
 
 
 class SurveyQuestion(models.Model):
@@ -224,10 +224,10 @@ class SurveyQuestion(models.Model):
     question = models.ForeignKey('Question')
 
     def __unicode__(self):
-        return unicode(self.id)
+        return unicode(self.survey.name + ' - ' + self.question.title)
 
     def __str__(self):
-        return str(self.id)
+        return str(self.survey.name + ' - ' + self.question.title)
 
 
 class SurveyQuestionRule(models.Model):
