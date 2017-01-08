@@ -45,8 +45,15 @@ def score_response(response):
                     #run operator LOGIC to determine if rule is satisfied
                     if eval(str(metric["value"]) + operator["operator"] + str(sqr_argument["args_value"])):
                         potentials.append(sq_rule)
-                        
+
     # sort potentials on highest rules_priority
+    potentials.sort(key=lambda potential: potential["rules_priority"])
+    highest_priority = potentials.pop()
+
+    if highest_priority["next_question"]:
+        return highest_priority["next_question"]
+    else:
+        return "terminate"
 
 
 

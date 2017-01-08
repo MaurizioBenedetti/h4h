@@ -17,7 +17,7 @@ def store_response(response):
     session_id = response["session_id"]
 
     survey_question = models.SurveyQuestion.objects.get(question = question_id) # query for survey where question = question_id.   do we need a try/catch??
-    survey = mosels.Survey.objects.get(survey_id = survey_question.id) # survey_question.survey_question.id???
+    survey = models.Survey.objects.get(survey_id = survey_question.id) # survey_question.survey_question.id???
     #survey_question.survey = survey
 
     res = models.Response(timestamp = timestamp, respondent = respondent_id, raw_response = raw_response,
@@ -27,10 +27,20 @@ def store_response(response):
     # store the survey object
 
     for metric in response["metrics"]:
-        metric_id = metric["metric_id"]
-        value = metric["score"]
-        metric_res = models.MetricResponse(timestamp = timestamp,
-                response = res.id, metric = metric_id, value = value)
-        metric_res.save()
+        # query for MetricType using metric_id
+        metric_type = metric["metric_type"]
+        if metric_type["format"] == "S":
+            types = response["raw_response"].split(',')
+            for m_text_value in types:
+                # store text_values and everything else into MetricResponse
+                metric_res = models.MetricResponse(timestamp=timestamp,response=res.id,
+                        metric=metric_id, text_value=m_text_value , confidence=response[] )  # where is confidence??
+                metric_res.save()
+        else:
+            numeric_value = metric_type["type"]
+
+            metric_res = models.MetricResponse(timestamp=timestamp,response=res.id,
+                    metric=metric_id, numeric_value=response["raw_response"] , confidence= response[])#where is confidence??
+            metric_res.save()
 
     return

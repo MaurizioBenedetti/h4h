@@ -245,7 +245,7 @@ class QuestionLabel(models.Model):
 class SurveyQuestionRule(models.Model):
 
     survey_question = models.ForeignKey('SurveyQuestion')
-    next_question = models.ForeignKey('Question')
+    next_question = models.ForeignKey('Question', blank=True, null=True)
     rules_priority = models.CharField(max_length=2)
     is_active = models.BooleanField()
 
