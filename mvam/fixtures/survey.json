@@ -1,0 +1,1 @@
+[{"model": "mvam.survey", "pk": 1, "fields": {"geo_scope": 1, "survey_round": null, "name": "Test Survey", "description": "", "survey_type": null, "is_demo_required": true, "priority": 0, "first_question": "1"}}]
