@@ -42,13 +42,13 @@ class Language(models.Model):
 
 class LocationType(models.Model):
 
-    location_type = models.CharField(max_length=20)
+    model = models.CharField(max_length=20)
 
     def __unicode__(self):
-        return unicode(self.location_type)
+        return unicode(self.model)
 
     def __str__(self):
-        return str(self.location_type)
+        return str(self.model)
 
 
 class Occupation(models.Model):
@@ -91,7 +91,6 @@ class Response(models.Model):
 
 
 class Locations(models.Model):
-
     location = models.CharField(max_length=100)
 
     def __unicode__(self):
@@ -117,6 +116,7 @@ class Survey(models.Model):
     name = models.CharField(max_length=100)
     description = models.CharField(blank=True, null=True, max_length=255)
     survey_type = models.ForeignKey('SurveyType', blank=True, null=True) #foreign key to survey types
+    is_demo_required = models.BooleanField()
 
     def __unicode__(self):
         return unicode(self.id)
@@ -185,16 +185,28 @@ class Label(models.Model):
 
 class Question(models.Model):
 
-    question_name = models.CharField(max_length=50)
+    question_id = models.CharField(max_length=255, primary_key=True)
     question_text = models.CharField(max_length=255)
-    question_label = models.ForeignKey('Label', blank=True, null=True)
-    base_language = models.ForeignKey('Language', blank=True, null=True)
+    question_label = models.ForeignKey('Label')
+    base_language = models.CharField(max_length=100)
+    question_type = models.ForeignKey('QuestionType')
 
     def __unicode__(self):
-        return unicode(self.question_name)
+        return unicode(self.question_id)
 
     def __str__(self):
-        return str(self.question_name)
+        return str(self.question_id)
+
+
+class QuestionType(models.Model):
+
+    question_type = models.CharField(max_length=100)
+
+    def __unicode__(self):
+        return unicode(self.id)
+
+    def __str__(self):
+        return str(self.id)
 
 
 class SurveyLabel(models.Model):
