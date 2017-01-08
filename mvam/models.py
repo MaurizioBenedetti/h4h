@@ -11,7 +11,7 @@ class Respondent(models.Model):
         ('U', 'unknown')
     )
 
-    respondent_id = models.CharField(max_length=256, primary_key=True)
+    respondent_id = models.CharField(max_length=255, primary_key=True)
     location = models.CharField(max_length=100)
     location_type = models.ForeignKey('LocationType')
     respondent_language = models.ForeignKey('Language')
@@ -76,11 +76,11 @@ class Response(models.Model):
 
     timestamp = models.DateTimeField(auto_now_add=True)
     respondent = models.ForeignKey('Respondent')
-    raw_response = models.CharField(max_length=500)
+    raw_response = models.CharField(max_length=255)
     question = models.ForeignKey('Question')
     survey = models.ForeignKey('Survey')
     language = models.ForeignKey('Language')
-    session_id = models.CharField(max_length=256)
+    session_id = models.CharField(max_length=255)
 
     def __unicode__(self):
         return unicode(self.id)
@@ -107,7 +107,7 @@ class Survey(models.Model):
     geo_scope = models.ForeignKey('Locations')
     survey_round = models.IntegerField(blank=True, null=True)
     name = models.CharField(max_length=100)
-    description = models.CharField(blank=True, null=True, max_length=300)
+    description = models.CharField(blank=True, null=True, max_length=255)
     survey_type = models.ForeignKey('SurveyType') #foreign key to survey types
 
     def __unicode__(self):
@@ -175,8 +175,8 @@ class Label(models.Model):
 
 class Question(models.Model):
 
-    question_id = models.CharField(max_length=256, primary_key=True)
-    question_text = models.CharField(max_length=500)
+    question_id = models.CharField(max_length=255, primary_key=True)
+    question_text = models.CharField(max_length=255)
     question_label = models.ForeignKey('Label')
     base_language = models.CharField(max_length=100)
     question_type = models.ForeignKey('QuestionType')
