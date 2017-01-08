@@ -123,7 +123,8 @@ class HandleResponse(APIView):
         parsed_request['respondent'] = self.get_respondent(request)
         parsed_request['session_id'] = request.data['SessionID']
         try:
-            parsed_request['question']['question_id'] = self.get_survey_question(request)
+            if not request.data['location_flow']:
+                parsed_request['question']['question_id'] = self.get_survey_question(request)
         except KeyError:
             pass
 
