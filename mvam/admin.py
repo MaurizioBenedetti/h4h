@@ -18,5 +18,6 @@ admin.site.register(models.QuestionMetric, admin.ModelAdmin)
 admin.site.register(models.SurveyQuestion, admin.ModelAdmin)
 admin.site.register(models.SurveyQuestionRule, admin.ModelAdmin)
 admin.site.register(models.SurveyQuestionRulesArgument, admin.ModelAdmin)
+admin.site.register(models.Operator, admin.ModelAdmin)
 
 

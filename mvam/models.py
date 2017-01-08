@@ -107,7 +107,7 @@ class Survey(models.Model):
     geo_scope = models.ForeignKey('Locations')
     survey_round = models.IntegerField(blank=True, null=True)
     name = models.CharField(max_length=100)
-    description = models.CharField(blank=True, null=True, max_length=300)
+    description = models.CharField(blank=True, null=True, max_length=256)
     survey_type = models.ForeignKey('SurveyType') #foreign key to survey types
 
     def __unicode__(self):
@@ -175,8 +175,8 @@ class Label(models.Model):
 
 class Question(models.Model):
 
-    question_id = models.CharField(max_length=256, primary_key=True)
-    question_text = models.CharField(max_length=500)
+    question_id = models.CharField(max_length=255, primary_key=True)
+    question_text = models.CharField(max_length=255)
     question_label = models.ForeignKey('Label')
     base_language = models.CharField(max_length=100)
     question_type = models.ForeignKey('QuestionType')
@@ -223,13 +223,21 @@ class SurveyQuestionRule(models.Model):
     def __str__(self):
         return str(self.id)
 
+class Operator(models.Model):
+    operator = models.CharField(max_length=1)
+
+    def __unicode__(self):
+        return unicode(self.id)
+
+    def __str__(self):
+        return str(self.id)
 
 class SurveyQuestionRulesArgument(models.Model):
 
     survey_question_rules = models.ForeignKey('SurveyQuestionRule')
     args_metric = models.ForeignKey('Metric')
-    args_operator = models.CharField(max_length=10)
-    args_value = models.CharField(max_length=10)
+    args_operator = models.ForeignKey('operator') #operator table
+    args_value = models.IntegerField()
 
     def __unicode__(self):
         return unicode(self.id)
