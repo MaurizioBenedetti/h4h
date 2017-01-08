@@ -11,4 +11,10 @@ routes = (
     (r'location', views.LocationsViewset, 'location'),
     (r'surveytype', views.SurveyViewset, 'surveytype'),
     (r'survey', views.SurveyViewset, 'survey'),
+    (r'labels', views.LabelViewset, 'labels'),
+    (r'metrictypes', views.MetricTypeViewset, 'metrictypes'),
+    (r'metric', views.MetricViewSet, 'metric'),
+    (r'questionlabel', views.QuestionLabelViewset, 'questionlabel'),
+    (r'questionmetric', views.QuestionMetricViewset, 'questionmetric'),
+    (r'metricresponse', views.MetricResponseViewset, 'metricresponse'),
 )

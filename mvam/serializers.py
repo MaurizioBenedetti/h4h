@@ -1,5 +1,5 @@
 from rest_framework.serializers import ModelSerializer, PrimaryKeyRelatedField
-from rest_framework_bulk import BulkListSerializer, BulkSerializerMixin
+from rest_framework import serializers
 
 from . import models
 
@@ -63,4 +63,69 @@ class SurveySerializer(ModelSerializer):
 
     class Meta:
         model = models.Survey
+        fields = '__all__'
+
+
+class MetricResponseSerializer(ModelSerializer):
+
+    response = ResponseSerializer()
+
+    class Meta:
+        model = models.MetricResponse
+        fields = '__all__'
+
+
+class LabelSerializer(ModelSerializer):
+
+    class Meta:
+        model = models.Label
+        fields = '__all__'
+
+
+class MetricTypeSerializer(ModelSerializer):
+
+    class Meta:
+        model = models.MetricType
+        fields = '__all__'
+
+
+class MetricSerializer(ModelSerializer):
+
+    metric_type = MetricTypeSerializer()
+
+    class Meta:
+        model = models.Metric
+        fields = '__all__'
+
+
+class QuestionMetricSerializer(ModelSerializer):
+
+    metric = MetricSerializer()
+
+    class Meta:
+        model = models.QuestionMetric
+        fields = '__all__'
+
+
+class QuestionSerializer(ModelSerializer):
+
+    class Meta:
+        model = models.Question
+        fields = '__all__'
+
+
+class QuestionLabelSerializer(ModelSerializer):
+
+    label = LabelSerializer()
+    question = QuestionSerializer()
+
+    class Meta:
+        model = models.QuestionLabel
+        fields = '__all__'
+
+
+class MetricTypeSerializer(ModelSerializer):
+
+    class Meta:
+        model = models.MetricType
         fields = '__all__'
