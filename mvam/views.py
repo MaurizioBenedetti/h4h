@@ -96,7 +96,7 @@ class HandleResponse(APIView):
     def get_survey_question(self, request):
 
         try:
-            survey_question = models.SurveyQuestion.objects.get(
+            return models.SurveyQuestion.objects.get(
                 id=request.data['question']['question_id']
             )
         except KeyError:
@@ -104,12 +104,28 @@ class HandleResponse(APIView):
         except ObjectDoesNotExist:
             raise ParseError('the question ID provided is invalid')
 
+    def get_survey(self, data):
+
+        try:
+            return models.Survey.objects.get(
+                id=data['survey']
+            )
+        except KeyError:
+            pass
+        except ObjectDoesNotExist:
+            raise ParseError('bad survey id')
+
     def parse_request(self, request):
 
         parsed_request = request.data
         parsed_request['respondent'] = self.get_respondent(request)
         try:
             parsed_request['question']['question_id'] = self.get_survey_question(request)
+        except KeyError:
+            pass
+
+        try:
+            parsed_request['survey'] = self.get_survey(request.data)
         except KeyError:
             pass
 
@@ -126,9 +142,6 @@ class HandleResponse(APIView):
             return False
 
     def get_next_survey(self, respondent):
-
-        print respondent
-        print respondent.location
 
         NO_SURVEY = {
             'on_next': 'TERMINATE',
@@ -201,8 +214,8 @@ class HandleResponse(APIView):
         formatted_metrics = []
         for metric in metrics:
             formatted_metrics.append({
-                'metric_id': metric.id,
-                'metric_type': metric.type
+                'metric_id': metric.metric.id,
+                'metric_type': metric.metric.metric_type.type
             })
 
         return formatted_metrics
@@ -222,6 +235,7 @@ class HandleResponse(APIView):
             'device_type': device_type,
         }
         response['raw_response'] = None
+        response['survey'] = survey.id
         response['question'] = {
             'question_id': survey.first_question.id,
             'question_text': survey.first_question.text,
@@ -261,7 +275,7 @@ class HandleResponse(APIView):
         storer.store_response(parsed_request)
 
         # then we need to score the response
-        next_question = scorer.score_response(parsed_request)
+        #next_question = scorer.score_response(parsed_request)
 
         # format a new response based on the next question
 

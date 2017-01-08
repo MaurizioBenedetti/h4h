@@ -88,7 +88,7 @@ class MetricType(models.Model):
 
 class MetricResponse(models.Model):
 
-    timestamp = models.DateTimeField()
+    timestamp = models.DateTimeField(auto_now_add=True)
     response = models.ForeignKey('Response')
     metric = models.ForeignKey('Metric')
     numeric_value = models.DecimalField(decimal_places=3, max_digits=10, blank=True, null=True)
@@ -192,7 +192,7 @@ class Response(models.Model):
     raw_response = models.CharField(max_length=255)
     question = models.ForeignKey('Question')
     survey = models.ForeignKey('Survey')
-    language = models.ForeignKey('Language')
+    language = models.ForeignKey('Language', blank=True, null=True)
     session_id = models.CharField(max_length=255)
 
     def __unicode__(self):
