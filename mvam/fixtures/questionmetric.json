@@ -1,0 +1,1 @@
+[{"model": "mvam.questionmetric", "pk": 1, "fields": {"metric": 1, "question": 1}}, {"model": "mvam.questionmetric", "pk": 2, "fields": {"metric": 2, "question": 2}}]

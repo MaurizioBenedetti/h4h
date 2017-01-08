@@ -1,1 +1,1 @@
-[{"model": "mvam.question", "pk": 1, "fields": {"title": "1", "text": "How many foods do you have", "base_language": "1", "question_type": 1}}]
+[{"model": "mvam.question", "pk": 1, "fields": {"title": "At the moment, is food generally available on the", "text": "At the moment, is food generally available on the market?", "base_language": 1}}, {"model": "mvam.question", "pk": 2, "fields": {"title": "Currently, what is the price of a bag of rice?", "text": "Currently, what is the price of a bag of rice?", "base_language": 1}}]
