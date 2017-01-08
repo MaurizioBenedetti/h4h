@@ -25,6 +25,8 @@ class HandleResponse(APIView):
 
     def is_new_survey(self, request):
 
+        print 'checking for new survey'
+
         try:
             _ = request.data['question']['question_id']
             return False
@@ -94,7 +96,12 @@ class HandleResponse(APIView):
 
         parsed_request = request.data
         parsed_request['respondent'] = self.get_respondent(request)
-        parsed_request['question']['question_id'] = self.get_survey_question(request)
+        try:
+            parsed_request['question']['question_id'] = self.get_survey_question(request)
+        except KeyError:
+            pass
+
+        return parsed_request
 
     def got_a_response(self, data):
 
@@ -106,19 +113,77 @@ class HandleResponse(APIView):
         except KeyError:
             return False
 
+    def get_next_survey(self, respondent):
+
+        NO_SURVEY = {
+            'on_next': 'TERMINATE',
+            'message': 'Sorry, there are no active surveys in your area'
+        }
+
+        try:
+            return models.Survey.objects.filter(
+                geo_scope=respondent.location
+            )[0]
+        except IndexError:
+            return NO_SURVEY
+
+    def get_termination(self, termination, request):
+
+        try:
+            language = request['respondent'].language.language
+        except AttributeError:
+            language = None
+
+        try:
+            language_type = request['respondent'].language_type.language_type
+        except AttributeError:
+            language_type = None
+
+        try:
+            device_type = request['respondent'].device_type.device_type
+        except AttributeError:
+            device_type = None
+
+        response = request
+        response['respondent'] = {
+            'respondent_id': response['respondent'].respondent_id,
+            'location': response['respondent'].location.location,
+            'location_type': language_type,
+            'language': language,
+            'device_type': device_type,
+        }
+        response['raw_response'] = None
+        response['question'] = {
+            'question_text': termination['message']
+        }
+        response['on_next'] = termination['on_next']
+
+        print response
+
+        return response
+
     def post(self, request):
 
+        print 'being handle'
         if not self.is_valid_request(request):
             raise ParseError(
                 'invalid request body'
             )
-
         parsed_request = self.parse_request(request)
 
         # is this a new survey
         if self.is_new_survey(request):
 
+            print 'new request'
+
+            # determine which survey to return
+            survey = self.get_next_survey(parsed_request['respondent'])
+            if type(survey) is not models.Survey:
+                return Response(self.get_termination(survey, parsed_request))
+
             return Response({'STATUS': 'NEW SURVEY'})
+
+        print 'not a new request'
 
         # if it isn't a new question, but we didn't get any response
         # respond with the same question
@@ -135,6 +200,7 @@ class HandleResponse(APIView):
         # format a new response based on the next question
 
         return Response({'STATUS': 'NEXT QUESTION'})
+
 
 class RespondentViewset(viewsets.ModelViewSet):
     serializer_class = RespondentSerializer

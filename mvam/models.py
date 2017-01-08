@@ -14,7 +14,7 @@ class Respondent(models.Model):
     respondent_id = models.CharField(max_length=255, primary_key=True)
     location = models.ForeignKey('Locations')
     location_type = models.ForeignKey('LocationType')
-    respondent_language = models.ForeignKey('Language', blank=True, null=True)
+    language = models.ForeignKey('Language', blank=True, null=True)
     device_type = models.ForeignKey('DeviceType', blank=True, null=True)
     gender = models.CharField(
         max_length=5, choices=GENDERS, blank=True, null=True)
@@ -42,13 +42,13 @@ class Language(models.Model):
 
 class LocationType(models.Model):
 
-    model = models.CharField(max_length=20)
+    location_type = models.CharField(max_length=20)
 
     def __unicode__(self):
-        return unicode(self.model)
+        return unicode(self.location_type)
 
     def __str__(self):
-        return str(self.model)
+        return str(self.location_type)
 
 
 class Occupation(models.Model):
@@ -117,6 +117,8 @@ class Survey(models.Model):
     description = models.CharField(blank=True, null=True, max_length=255)
     survey_type = models.ForeignKey('SurveyType', blank=True, null=True) #foreign key to survey types
     is_demo_required = models.BooleanField()
+    priority = models.IntegerField(default=0)
+    first_question = models.ForeignKey('Question', blank=True, null=True)
 
     def __unicode__(self):
         return unicode(self.id)
