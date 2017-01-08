@@ -298,12 +298,23 @@ class HandleResponse(APIView):
 
     def has_location(self, request):
 
-        return (
+        location_in_request =  (
             'location' in request.data.keys()
             and 'location_type' in request.data.keys()
             and request.data['location'] is not None
             and request.data['location_type'] is not None
         )
+
+        if location_in_request:
+            return True
+
+        try:
+            _ = models.Respondent.objects.get(
+                respondent_id=request.data['respondent']['respondent_id']
+            )
+            return True
+        except ObjectDoesNotExist:
+            return False
 
     def post(self, request):
 
