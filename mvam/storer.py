@@ -42,6 +42,8 @@ def store_response(response):
             id=_metric['metric_id']
         )
         if metric.metric_type.format == "S":
+            if _metric['metric_value'] is None:
+                continue
             types = _metric['metric_value'].split(',')
             for m_text_value in types:
 
