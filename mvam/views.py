@@ -43,7 +43,7 @@ class HandleResponse(APIView):
         try:
             _ = request.data['respondent']['respondent_id']
             _ = request.data['timestamp']
-            _ = request.data['session_id']
+            _ = request.data['SessionID']
             return True
         except KeyError:
             return False
@@ -121,6 +121,7 @@ class HandleResponse(APIView):
 
         parsed_request = request.data.copy()
         parsed_request['respondent'] = self.get_respondent(request)
+        parsed_request['session_id'] = request.data['SessionID']
         try:
             parsed_request['question']['question_id'] = self.get_survey_question(request)
         except KeyError:
