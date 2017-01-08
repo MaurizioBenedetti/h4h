@@ -223,13 +223,21 @@ class SurveyQuestionRule(models.Model):
     def __str__(self):
         return str(self.id)
 
+class Operator(models.Model):
+    operator = models.CharField(max_length=1)
+
+    def __unicode__(self):
+        return unicode(self.id)
+
+    def __str__(self):
+        return str(self.id)
 
 class SurveyQuestionRulesArgument(models.Model):
 
     survey_question_rules = models.ForeignKey('SurveyQuestionRule')
     args_metric = models.ForeignKey('Metric')
-    args_operator = models.CharField(max_length=10)
-    args_value = models.CharField(max_length=10)
+    args_operator = models.ForeignKey('operator') #operator table
+    args_value = models.IntegerField()
 
     def __unicode__(self):
         return unicode(self.id)
