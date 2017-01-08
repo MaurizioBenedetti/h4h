@@ -313,6 +313,112 @@ class SurveyTypeViewset(viewsets.ModelViewSet):
 
 class SurveyViewset(viewsets.ModelViewSet):
     serializer_class = SurveySerializer
-    #permission_classes = [IsAccountAdminOrReadOnly]
     queryset = models.Survey.objects.all()
 
+
+class LabelViewset(viewsets.ModelViewSet):
+    serializer_class = LabelSerializer
+    queryset = models.Label.objects.all()
+
+
+class MetricTypeViewset(viewsets.ModelViewSet):
+    serializer_class = MetricTypeSerializer
+    queryset = models.MetricType.objects.all()
+
+
+class MetricViewSet(viewsets.ModelViewSet):
+    serializer_class = MetricSerializer
+    queryset = models.Metric.objects.all()
+
+
+class QuestionMetricViewset(viewsets.ModelViewSet):
+    serializer_class = QuestionMetricSerializer
+
+    def get_queryset(self):
+
+        queryset = models.QuestionMetric.objects.all()
+
+        question = self.request.query_params.get(
+            'question',
+            None
+        )
+        if question is not None:
+            queryset = queryset.filter(
+                question__id=question
+            )
+
+        return queryset
+
+
+class QuestionLabelViewset(viewsets.ModelViewSet):
+    serializer_class = QuestionLabelSerializer
+
+    def get_queryset(self):
+
+        queryset = models.QuestionLabel.objects.all()
+
+        label = self.request.query_params.get(
+            'label',
+            None
+        )
+        if label is not None:
+            queryset = queryset.filter(
+                label__label=label
+            )
+
+        question = self.request.query_params.get(
+            'question',
+            None
+        )
+        if question is not None:
+            queryset = queryset.filter(
+                question__id=question
+            )
+
+        return queryset
+
+
+class MetricResponseViewset(viewsets.ModelViewSet):
+    serializer_class = MetricResponseSerializer
+
+    def get_queryset(self):
+
+        queryset = models.MetricResponse.objects.all()
+
+        question = self.request.query_params.get(
+            'question',
+            None
+        )
+        if question is not None:
+            queryset = queryset.filter(
+                response__question__id=question
+            )
+
+        metric = self.request.query_params.get(
+            'metric',
+            None
+        )
+        if metric is not None:
+            queryset = queryset.filter(
+                metric__id=metric
+            )
+
+        start = self.request.query_params.get(
+            'start',
+            None
+        )
+        if start is not None:
+            queryset = queryset.filter(
+                timestamp__gte=start
+            )
+
+        end = self.request.query_params.get(
+            'end',
+            None
+        )
+        if end is not None:
+            queryset = queryset.filter(
+                timestamp__lte=end
+            )
+
+        return queryset

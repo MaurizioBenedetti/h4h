@@ -141,12 +141,30 @@ class SurveyQuestion(models.Model):
 class Metric(models.Model):
 
     metric_name = models.CharField(max_length=100)
+    metric_type = models.ForeignKey('MetricType')
 
     def __unicode__(self):
-        return unicode(self.id)
+        return unicode(self.metric_name)
 
     def __str__(self):
-        return str(self.id)
+        return str(self.metric_name)
+
+
+class MetricType(models.Model):
+
+    FORMATS = (
+        ('N', 'NUMERIC'),
+        ('S', 'STRING')
+    )
+
+    type = models.CharField(max_length=20)
+    format = models.CharField(max_length=20, choices=FORMATS)
+
+    def __unicode__(self):
+        return unicode(self.type)
+
+    def __str__(self):
+        return str(self.type)
 
 
 class QuestionMetric(models.Model):
@@ -165,7 +183,9 @@ class MetricResponse(models.Model):
     timestamp = models.DateTimeField()
     response = models.ForeignKey('Response')
     metric = models.ForeignKey('Metric')
-    value = models.DecimalField(decimal_places=2, max_digits=4)
+    numeric_value = models.DecimalField(decimal_places=3, max_digits=4, blank=True, null=True)
+    text_value = models.CharField(max_length=50, blank=True, null=True)
+    confidence = models.DecimalField(decimal_places=3, max_digits=4, blank=True, null=True)
 
     def __unicode__(self):
         return unicode(self.id)
@@ -179,10 +199,10 @@ class Label(models.Model):
     label = models.CharField(max_length=20)
 
     def __unicode__(self):
-        return unicode(self.id)
+        return unicode(self.label)
 
     def __str__(self):
-        return str(self.id)
+        return str(self.label)
 
 
 class Question(models.Model):
@@ -210,16 +230,16 @@ class QuestionType(models.Model):
         return str(self.id)
 
 
-class SurveyLabel(models.Model):
+class QuestionLabel(models.Model):
 
-    label_key = models.ForeignKey('Label')
-    survey_key = models.ForeignKey('Survey')
+    label = models.ForeignKey('Label')
+    question = models.ForeignKey('Question')
 
     def __unicode__(self):
-        return unicode(self.id)
+        return unicode('{} - {}'.format(self.question, self.label))
 
     def __str__(self):
-        return str(self.id)
+        return str('{} - {}'.format(self.question, self.label))
 
 
 class SurveyQuestionRule(models.Model):
