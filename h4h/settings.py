@@ -113,21 +113,14 @@ USE_TZ = True
 STATIC_URL = '/static/'
 STATIC_ROOT = 'static'
 
-if 'AWS_CLOUDWATCH_HOME' in os.environ:
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.mysql',
-            'NAME': 'h4h',
-            'USER': 'root',
-            'PASSWORD': 'mypassword',
-            'HOST': 'aa149qadagdgasl.cl8rpquulp3c.us-east-1.rds.amazonaws.com',
-            'PORT': 3306,
-        }
+
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'h4h',
+        'USER': 'root',
+        'PASSWORD': 'mypassword',
+        'HOST': 'aa149qadagdgasl.cl8rpquulp3c.us-east-1.rds.amazonaws.com',
+        'PORT': 3306,
     }
-else:
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
-        },
-    }
+}
