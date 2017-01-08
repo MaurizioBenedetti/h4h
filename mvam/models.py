@@ -94,10 +94,10 @@ class Locations(models.Model):
     location = models.CharField(max_length=100)
 
     def __unicode__(self):
-        return unicode(self.id)
+        return unicode(self.location)
 
     def __str__(self):
-        return str(self.id)
+        return str(self.location)
 
 
 class SurveyType(models.Model):

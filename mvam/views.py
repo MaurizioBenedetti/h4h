@@ -43,14 +43,23 @@ class HandleResponse(APIView):
 
     def get_respondent(self, request):
 
+        _respondent = request.data['respondent']
+
         try:
             respondent = models.Respondent.objects.get(
-                respondent_id=request.data['respondent']['respondent_id']
+                respondent_id=_respondent['respondent_id']
             )
+
+            if 'location' in _respondent.keys() and 'location_type' in _respondent.keys():
+                new_location = self.get_location(_respondent)
+                respondent.location = new_location['location']
+                respondent.location_type = new_location['location_type']
+                respondent.save()
+
         except ObjectDoesNotExist:
-            location = self.get_location(request.data['respondent'])
+            location = self.get_location(_respondent)
             respondent = models.Respondent(
-                respondent_id=request.data['respondent']['respondent_id'],
+                respondent_id=_respondent['respondent_id'],
                 location=location['location'],
                 location_type=location['location_type']
             )
@@ -113,14 +122,24 @@ class HandleResponse(APIView):
 
     def get_next_survey(self, respondent):
 
+        print respondent
+        print respondent.location
+
         NO_SURVEY = {
             'on_next': 'TERMINATE',
             'message': 'Sorry, there are no active surveys in your area'
         }
 
         try:
+            location = models.Locations.objects.get(
+                location=respondent.location
+            )
+        except ObjectDoesNotExist:
+            return NO_SURVEY
+
+        try:
             return models.Survey.objects.filter(
-                geo_scope=respondent.location
+                geo_scope=location
             )[0]
         except IndexError:
             return NO_SURVEY
@@ -168,13 +187,28 @@ class HandleResponse(APIView):
 
         return response
 
+    def get_question_metrics(self, question):
+
+        metrics = models.QuestionMetric.objects.filter(
+            question=question
+        )
+
+        formatted_metrics = []
+        for metric in metrics:
+            formatted_metrics.append({
+                'metric_id': metric.id,
+                'metric_type': metric.type
+            })
+
+        return formatted_metrics
+
     def get_first_question(self, survey, request):
 
-        language = self.get_language(request)
-        language_type = self.get_language_type(request)
-        device_type = self.get_device_type(request)
+        language = self.get_language(request.data)
+        language_type = self.get_language_type(request.data)
+        device_type = self.get_device_type(request.data)
 
-        response = request
+        response = request.data
         response['respondent'] = {
             'respondent_id': response['respondent'].respondent_id,
             'location': response['respondent'].location.location,
@@ -184,9 +218,12 @@ class HandleResponse(APIView):
         }
         response['raw_response'] = None
         response['question'] = {
-            survey.first_question.id
+            'question_id': survey.first_question.id,
+            'question_text': survey.first_question.text,
+            'metrics': self.get_question_metrics(survey.first_question)
         }
 
+        return response
 
     def post(self, request):
 
