@@ -116,6 +116,7 @@ class Survey(models.Model):
     name = models.CharField(max_length=100)
     description = models.CharField(blank=True, null=True, max_length=255)
     survey_type = models.ForeignKey('SurveyType') #foreign key to survey types
+    is_demo_required = models.BooleanField()
 
     def __unicode__(self):
         return unicode(self.id)
