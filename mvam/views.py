@@ -20,55 +20,55 @@ from mvam.serializers import *
 from . import serializers, models
 
 
-class RespondentView(viewsets.ModelViewSet):
+class RespondentViewset(viewsets.ModelViewSet):
     serializer_class = RespondentSerializer
     #permission_classes = [IsAccountAdminOrReadOnly]
     queryset = models.Respondent.objects.all()
 
 
-class LanguageView(viewsets.ModelViewSet):
+class LanguageViewset(viewsets.ModelViewSet):
     serializer_class = LanguageSerializer
     #permission_classes = [IsAccountAdminOrReadOnly]
     queryset = models.Language.objects.all()
 
 
-class LocationTypeView(viewsets.ModelViewSet):
+class LocationTypeViewset(viewsets.ModelViewSet):
     serializer_class = LocationTypeSerializer
     #permission_classes = [IsAccountAdminOrReadOnly]
     queryset = models.LocationType.objects.all()
 
 
-class OccupationView(viewsets.ModelViewSet):
+class OccupationViewset(viewsets.ModelViewSet):
     serializer_class = OccupationSerializer
     #permission_classes = [IsAccountAdminOrReadOnly]
     queryset = models.Occupation.objects.all()
 
 
-class DeviceTypeView(viewsets.ModelViewSet):
+class DeviceTypeViewset(viewsets.ModelViewSet):
     serializer_class = DeviceTypeSerializer
     #permission_classes = [IsAccountAdminOrReadOnly]
     queryset = models.DeviceType.objects.all()
 
 
-class ResponseView(viewsets.ModelViewSet):
+class ResponseViewset(viewsets.ModelViewSet):
     serializer_class = ResponseSerializer
     #permission_classes = [IsAccountAdminOrReadOnly]
     queryset = models.Response.objects.all()
 
 
-class LocationsView(viewsets.ModelViewSet):
+class LocationsViewset(viewsets.ModelViewSet):
     serializer_class = LocationsSerializer
     #permission_classes = [IsAccountAdminOrReadOnly]
     queryset = models.Locations.objects.all()
 
 
-class SurveyTypeView(viewsets.ModelViewSet):
+class SurveyTypeViewset(viewsets.ModelViewSet):
     serializer_class = SurveyTypeSerializer
     #permission_classes = [IsAccountAdminOrReadOnly]
     queryset = models.SurveyType.objects.all()
 
 
-class SurveyView(viewsets.ModelViewSet):
+class SurveyViewset(viewsets.ModelViewSet):
     serializer_class = SurveySerializer
     #permission_classes = [IsAccountAdminOrReadOnly]
     queryset = models.Survey.objects.all()
