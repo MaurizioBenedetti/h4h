@@ -3,6 +3,162 @@ from __future__ import unicode_literals
 from django.db import models
 
 
+class DeviceType(models.Model):
+
+    device_type = models.CharField(max_length=20)
+
+    def __unicode__(self):
+        return unicode(self.device_type)
+
+    def __str__(self):
+        return str(self.device_type)
+
+
+class Label(models.Model):
+
+    label = models.CharField(max_length=20)
+
+    def __unicode__(self):
+        return unicode(self.label)
+
+    def __str__(self):
+        return str(self.label)
+
+
+class Language(models.Model):
+
+    language = models.CharField(max_length=20)
+
+    def __unicode__(self):
+        return unicode(self.language)
+
+    def __str__(self):
+        return str(self.language)
+
+
+class Locations(models.Model):
+    location = models.CharField(max_length=100)
+
+    def __unicode__(self):
+        return unicode(self.location)
+
+    def __str__(self):
+        return str(self.location)
+    
+
+class LocationType(models.Model):
+
+    location_type = models.CharField(max_length=20)
+
+    def __unicode__(self):
+        return unicode(self.location_type)
+
+    def __str__(self):
+        return str(self.location_type)
+
+
+class Occupation(models.Model):
+
+    occupation = models.CharField(max_length=20)
+
+    def __unicode__(self):
+        return unicode(self.occupation)
+
+    def __str__(self):
+        return str(self.occupation)
+
+
+class Metric(models.Model):
+
+    metric_name = models.CharField(max_length=100)
+    metric_type = models.ForeignKey('MetricType')
+
+    def __unicode__(self):
+        return unicode(self.metric_name)
+
+    def __str__(self):
+        return str(self.metric_name)
+
+
+class MetricType(models.Model):
+
+    FORMATS = (
+        ('N', 'NUMERIC'),
+        ('S', 'STRING')
+    )
+
+    type = models.CharField(max_length=20)
+    format = models.CharField(max_length=20, choices=FORMATS)
+
+    def __unicode__(self):
+        return unicode(self.type)
+
+    def __str__(self):
+        return str(self.type)
+
+
+class MetricResponse(models.Model):
+
+    timestamp = models.DateTimeField()
+    response = models.ForeignKey('Response')
+    metric = models.ForeignKey('Metric')
+    numeric_value = models.DecimalField(decimal_places=3, max_digits=4, blank=True, null=True)
+    text_value = models.CharField(max_length=50, blank=True, null=True)
+    confidence = models.DecimalField(decimal_places=3, max_digits=4, blank=True, null=True)
+
+    def __unicode__(self):
+        return unicode(self.id)
+
+    def __str__(self):
+        return str(self.id)
+
+
+class Operator(models.Model):
+    operator = models.CharField(max_length=1)
+
+    def __unicode__(self):
+        return unicode(self.id)
+
+    def __str__(self):
+        return str(self.id)
+
+
+class Question(models.Model):
+
+    title = models.CharField(max_length=50)
+    text = models.CharField(max_length=255)
+    base_language = models.ForeignKey('Language')
+
+    def __unicode__(self):
+        return unicode(self.title)
+
+    def __str__(self):
+        return str(self.title)
+
+
+class QuestionLabel(models.Model):
+
+    label = models.ForeignKey('Label')
+    question = models.ForeignKey('Question')
+
+    def __unicode__(self):
+        return unicode('{} - {}'.format(self.question, self.label))
+
+    def __str__(self):
+        return str('{} - {}'.format(self.question, self.label))
+
+
+class QuestionMetric(models.Model):
+    metric = models.ForeignKey('Metric')
+    question = models.ForeignKey('Question')
+
+    def __unicode__(self):
+        return unicode(self.id)
+
+    def __str__(self):
+        return str(self.id)
+
+
 class Respondent(models.Model):
 
     GENDERS = (
@@ -29,50 +185,6 @@ class Respondent(models.Model):
         return str(self.respondent_id)
 
 
-class Language(models.Model):
-
-    language = models.CharField(max_length=20)
-
-    def __unicode__(self):
-        return unicode(self.language)
-
-    def __str__(self):
-        return str(self.language)
-
-
-class LocationType(models.Model):
-
-    location_type = models.CharField(max_length=20)
-
-    def __unicode__(self):
-        return unicode(self.location_type)
-
-    def __str__(self):
-        return str(self.location_type)
-
-
-class Occupation(models.Model):
-
-    occupation = models.CharField(max_length=20)
-
-    def __unicode__(self):
-        return unicode(self.occupation)
-
-    def __str__(self):
-        return str(self.occupation)
-
-
-class DeviceType(models.Model):
-
-    device_type = models.CharField(max_length=20)
-
-    def __unicode__(self):
-        return unicode(self.device_type)
-
-    def __str__(self):
-        return str(self.device_type)
-
-
 class Response(models.Model):
 
     timestamp = models.DateTimeField(auto_now_add=True)
@@ -82,26 +194,6 @@ class Response(models.Model):
     survey = models.ForeignKey('Survey')
     language = models.ForeignKey('Language')
     session_id = models.CharField(max_length=255)
-
-    def __unicode__(self):
-        return unicode(self.id)
-
-    def __str__(self):
-        return str(self.id)
-
-
-class Locations(models.Model):
-    location = models.CharField(max_length=100)
-
-    def __unicode__(self):
-        return unicode(self.location)
-
-    def __str__(self):
-        return str(self.location)
-
-
-class SurveyType(models.Model):
-    survey_type = models.CharField(max_length=100)
 
     def __unicode__(self):
         return unicode(self.id)
@@ -138,110 +230,6 @@ class SurveyQuestion(models.Model):
         return str(self.id)
 
 
-class Metric(models.Model):
-
-    metric_name = models.CharField(max_length=100)
-    metric_type = models.ForeignKey('MetricType')
-
-    def __unicode__(self):
-        return unicode(self.metric_name)
-
-    def __str__(self):
-        return str(self.metric_name)
-
-
-class MetricType(models.Model):
-
-    FORMATS = (
-        ('N', 'NUMERIC'),
-        ('S', 'STRING')
-    )
-
-    type = models.CharField(max_length=20)
-    format = models.CharField(max_length=20, choices=FORMATS)
-
-    def __unicode__(self):
-        return unicode(self.type)
-
-    def __str__(self):
-        return str(self.type)
-
-
-class QuestionMetric(models.Model):
-    metric = models.ForeignKey('Metric')
-    question = models.ForeignKey('Question')
-
-    def __unicode__(self):
-        return unicode(self.id)
-
-    def __str__(self):
-        return str(self.id)
-
-
-class MetricResponse(models.Model):
-
-    timestamp = models.DateTimeField()
-    response = models.ForeignKey('Response')
-    metric = models.ForeignKey('Metric')
-    numeric_value = models.DecimalField(decimal_places=3, max_digits=4, blank=True, null=True)
-    text_value = models.CharField(max_length=50, blank=True, null=True)
-    confidence = models.DecimalField(decimal_places=3, max_digits=4, blank=True, null=True)
-
-    def __unicode__(self):
-        return unicode(self.id)
-
-    def __str__(self):
-        return str(self.id)
-
-
-class Label(models.Model):
-
-    label = models.CharField(max_length=20)
-
-    def __unicode__(self):
-        return unicode(self.label)
-
-    def __str__(self):
-        return str(self.label)
-
-
-class Question(models.Model):
-
-    title = models.CharField(max_length=50)
-    text = models.CharField(max_length=255)
-    base_language = models.CharField(max_length=100)
-    question_type = models.ForeignKey('QuestionType')
-
-    def __unicode__(self):
-        return unicode(self.title)
-
-    def __str__(self):
-        return str(self.title)
-
-
-class QuestionType(models.Model):
-
-    question_type = models.CharField(max_length=100)
-
-    def __unicode__(self):
-        return unicode(self.id)
-
-    def __str__(self):
-        return str(self.id)
-
-
-class QuestionLabel(models.Model):
-
-    label = models.ForeignKey('Label')
-    question = models.ForeignKey('Question')
-
-    def __unicode__(self):
-        return unicode('{} - {}'.format(self.question, self.label))
-
-    def __str__(self):
-        return str('{} - {}'.format(self.question, self.label))
-
-
 class SurveyQuestionRule(models.Model):
 
     survey_question = models.ForeignKey('SurveyQuestion')
@@ -256,8 +244,12 @@ class SurveyQuestionRule(models.Model):
         return str(self.id)
 
 
-class Operator(models.Model):
-    operator = models.CharField(max_length=1)
+class SurveyQuestionRulesArgument(models.Model):
+
+    survey_question_rules = models.ForeignKey('SurveyQuestionRule')
+    args_metric = models.ForeignKey('Metric')
+    args_operator = models.ForeignKey('operator') #operator table
+    args_value = models.IntegerField()
 
     def __unicode__(self):
         return unicode(self.id)
@@ -266,12 +258,8 @@ class Operator(models.Model):
         return str(self.id)
 
 
-class SurveyQuestionRulesArgument(models.Model):
-
-    survey_question_rules = models.ForeignKey('SurveyQuestionRule')
-    args_metric = models.ForeignKey('Metric')
-    args_operator = models.ForeignKey('operator') #operator table
-    args_value = models.IntegerField()
+class SurveyType(models.Model):
+    survey_type = models.CharField(max_length=100)
 
     def __unicode__(self):
         return unicode(self.id)

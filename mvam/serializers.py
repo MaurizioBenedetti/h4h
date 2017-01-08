@@ -109,6 +109,8 @@ class QuestionMetricSerializer(ModelSerializer):
 
 class QuestionSerializer(ModelSerializer):
 
+    base_language = LanguageSerializer()
+
     class Meta:
         model = models.Question
         fields = '__all__'

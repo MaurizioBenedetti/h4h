@@ -331,6 +331,11 @@ class MetricViewSet(viewsets.ModelViewSet):
     queryset = models.Metric.objects.all()
 
 
+class QuestionViewSet(viewsets.ModelViewSet):
+    serializer_class = QuestionSerializer
+    queryset = models.Question.objects.all()
+
+
 class QuestionMetricViewset(viewsets.ModelViewSet):
     serializer_class = QuestionMetricSerializer
 

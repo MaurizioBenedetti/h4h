@@ -14,6 +14,7 @@ routes = (
     (r'labels', views.LabelViewset, 'labels'),
     (r'metrictypes', views.MetricTypeViewset, 'metrictypes'),
     (r'metric', views.MetricViewSet, 'metric'),
+    (r'question', views.QuestionViewSet, 'question'),
     (r'questionlabel', views.QuestionLabelViewset, 'questionlabel'),
     (r'questionmetric', views.QuestionMetricViewset, 'questionmetric'),
     (r'metricresponse', views.MetricResponseViewset, 'metricresponse'),
