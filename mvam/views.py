@@ -21,6 +21,11 @@ from rest_framework.views import APIView
 from . import serializers, models, scorer, storer
 
 
+class DeviceTypeViewSet(viewsets.ModelViewSet):
+    serializer_class = DeviceTypeSerializer
+    queryset = models.DeviceType.objects.all()
+
+
 class HandleResponse(APIView):
 
     def is_new_survey(self, request):
@@ -263,10 +268,9 @@ class HandleResponse(APIView):
         return Response({'STATUS': 'NEXT QUESTION'})
 
 
-class RespondentViewset(viewsets.ModelViewSet):
-    serializer_class = RespondentSerializer
-    #permission_classes = [IsAccountAdminOrReadOnly]
-    queryset = models.Respondent.objects.all()
+class LabelViewset(viewsets.ModelViewSet):
+    serializer_class = LabelSerializer
+    queryset = models.Label.objects.all()
 
 
 class LanguageViewset(viewsets.ModelViewSet):
@@ -275,10 +279,72 @@ class LanguageViewset(viewsets.ModelViewSet):
     queryset = models.Language.objects.all()
 
 
+class LocationsViewset(viewsets.ModelViewSet):
+    serializer_class = LocationsSerializer
+    #permission_classes = [IsAccountAdminOrReadOnly]
+    queryset = models.Locations.objects.all()
+
+
 class LocationTypeViewset(viewsets.ModelViewSet):
     serializer_class = LocationTypeSerializer
     #permission_classes = [IsAccountAdminOrReadOnly]
     queryset = models.LocationType.objects.all()
+
+
+class MetricViewSet(viewsets.ModelViewSet):
+    serializer_class = MetricSerializer
+    queryset = models.Metric.objects.all()
+
+
+class MetricResponseViewset(viewsets.ModelViewSet):
+    serializer_class = MetricResponseSerializer
+
+    def get_queryset(self):
+
+        queryset = models.MetricResponse.objects.all()
+
+        question = self.request.query_params.get(
+            'question',
+            None
+        )
+        if question is not None:
+            queryset = queryset.filter(
+                response__question__id=question
+            )
+
+        metric = self.request.query_params.get(
+            'metric',
+            None
+        )
+        if metric is not None:
+            queryset = queryset.filter(
+                metric__id=metric
+            )
+
+        start = self.request.query_params.get(
+            'start',
+            None
+        )
+        if start is not None:
+            queryset = queryset.filter(
+                timestamp__gte=start
+            )
+
+        end = self.request.query_params.get(
+            'end',
+            None
+        )
+        if end is not None:
+            queryset = queryset.filter(
+                timestamp__lte=end
+            )
+
+        return queryset
+
+
+class MetricTypeViewset(viewsets.ModelViewSet):
+    serializer_class = MetricTypeSerializer
+    queryset = models.MetricType.objects.all()
 
 
 class OccupationViewset(viewsets.ModelViewSet):
@@ -287,48 +353,9 @@ class OccupationViewset(viewsets.ModelViewSet):
     queryset = models.Occupation.objects.all()
 
 
-class DeviceTypeViewset(viewsets.ModelViewSet):
-    serializer_class = DeviceTypeSerializer
-    #permission_classes = [IsAccountAdminOrReadOnly]
-    queryset = models.DeviceType.objects.all()
-
-
-class ResponseViewset(viewsets.ModelViewSet):
-    serializer_class = ResponseSerializer
-    #permission_classes = [IsAccountAdminOrReadOnly]
-    queryset = models.Response.objects.all()
-
-
-class LocationsViewset(viewsets.ModelViewSet):
-    serializer_class = LocationsSerializer
-    #permission_classes = [IsAccountAdminOrReadOnly]
-    queryset = models.Locations.objects.all()
-
-
-class SurveyTypeViewset(viewsets.ModelViewSet):
-    serializer_class = SurveyTypeSerializer
-    #permission_classes = [IsAccountAdminOrReadOnly]
-    queryset = models.SurveyType.objects.all()
-
-
-class SurveyViewset(viewsets.ModelViewSet):
-    serializer_class = SurveySerializer
-    queryset = models.Survey.objects.all()
-
-
-class LabelViewset(viewsets.ModelViewSet):
-    serializer_class = LabelSerializer
-    queryset = models.Label.objects.all()
-
-
-class MetricTypeViewset(viewsets.ModelViewSet):
-    serializer_class = MetricTypeSerializer
-    queryset = models.MetricType.objects.all()
-
-
-class MetricViewSet(viewsets.ModelViewSet):
-    serializer_class = MetricSerializer
-    queryset = models.Metric.objects.all()
+class QuestionViewSet(viewsets.ModelViewSet):
+    serializer_class = QuestionSerializer
+    queryset = models.Question.objects.all()
 
 
 class QuestionMetricViewset(viewsets.ModelViewSet):
@@ -378,47 +405,38 @@ class QuestionLabelViewset(viewsets.ModelViewSet):
         return queryset
 
 
-class MetricResponseViewset(viewsets.ModelViewSet):
-    serializer_class = MetricResponseSerializer
+class RespondentViewset(viewsets.ModelViewSet):
+    serializer_class = RespondentSerializer
+    queryset = models.Respondent.objects.all()
 
-    def get_queryset(self):
 
-        queryset = models.MetricResponse.objects.all()
+class ResponseViewset(viewsets.ModelViewSet):
+    serializer_class = ResponseSerializer
+    #permission_classes = [IsAccountAdminOrReadOnly]
+    queryset = models.Response.objects.all()
 
-        question = self.request.query_params.get(
-            'question',
-            None
-        )
-        if question is not None:
-            queryset = queryset.filter(
-                response__question__id=question
-            )
 
-        metric = self.request.query_params.get(
-            'metric',
-            None
-        )
-        if metric is not None:
-            queryset = queryset.filter(
-                metric__id=metric
-            )
+class SurveyViewset(viewsets.ModelViewSet):
+    serializer_class = SurveySerializer
+    queryset = models.Survey.objects.all()
 
-        start = self.request.query_params.get(
-            'start',
-            None
-        )
-        if start is not None:
-            queryset = queryset.filter(
-                timestamp__gte=start
-            )
 
-        end = self.request.query_params.get(
-            'end',
-            None
-        )
-        if end is not None:
-            queryset = queryset.filter(
-                timestamp__lte=end
-            )
+class SurveyQuestionViewSet(viewsets.ModelViewSet):
+    serializer_class = SurveyQuestionSerializer
+    queryset = models.SurveyQuestion.objects.all()
 
-        return queryset
+
+class SurveyQuestionRuleViewSet(viewsets.ModelViewSet):
+    serializer_class = SurveyQuestionRuleSerializer
+    queryset = models.SurveyQuestionRule.objects.all()
+
+
+class SurveyQuestionRuleArgumentViewSet(viewsets.ModelViewSet):
+    serializer_class = SurveyQuestionRulesArgumentSerializer
+    queryset = models.SurveyQuestionRulesArgument.objects.all()
+
+
+class SurveyTypeViewset(viewsets.ModelViewSet):
+    serializer_class = SurveyTypeSerializer
+    #permission_classes = [IsAccountAdminOrReadOnly]
+    queryset = models.SurveyType.objects.all()
