@@ -3,4 +3,5 @@ django-filter==1.0.1
 django-suit==0.2.23
 djangorestframework==3.5.3
 Markdown==2.6.7
+MySQL-python==1.2.5
 wheel==0.24.0
