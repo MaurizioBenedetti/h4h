@@ -232,8 +232,8 @@ class SurveyQuestion(models.Model):
 
 class SurveyQuestionRule(models.Model):
 
-    survey_question = models.ForeignKey('SurveyQuestion')
-    next_question = models.ForeignKey('Question', blank=True, null=True)
+    survey_question = models.ForeignKey('SurveyQuestion', related_name='survey_question')
+    next_question = models.ForeignKey('SurveyQuestion', blank=True, null=True, related_name='next_question')
     rules_priority = models.CharField(max_length=2)
     is_active = models.BooleanField()
 
@@ -247,9 +247,9 @@ class SurveyQuestionRule(models.Model):
 class SurveyQuestionRulesArgument(models.Model):
 
     survey_question_rules = models.ForeignKey('SurveyQuestionRule')
-    args_metric = models.ForeignKey('Metric')
-    args_operator = models.ForeignKey('operator') #operator table
-    args_value = models.IntegerField()
+    metric = models.ForeignKey('Metric')
+    operator = models.ForeignKey('operator') #operator table
+    value = models.IntegerField()
 
     def __unicode__(self):
         return unicode(self.id)

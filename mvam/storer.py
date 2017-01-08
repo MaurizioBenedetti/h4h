@@ -10,8 +10,6 @@ def store_response(response):
     :return: None
     """
 
-    print response
-
 
     # store Response
     timestamp = response["timestamp"]

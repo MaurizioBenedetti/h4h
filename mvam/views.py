@@ -235,11 +235,33 @@ class HandleResponse(APIView):
             'device_type': device_type,
         }
         response['raw_response'] = None
-        response['survey'] = survey.id
         response['question'] = {
             'question_id': survey.first_question.id,
             'question_text': survey.first_question.text,
             'metrics': self.get_question_metrics(survey.first_question)
+        }
+
+        return response
+
+    def get_next_question(self, next_question, request):
+
+        language = self.get_language(request)
+        language_type = self.get_language_type(request)
+        device_type = self.get_device_type(request)
+
+        response = request
+        response['respondent'] = {
+            'respondent_id': response['respondent'].respondent_id,
+            'location': response['respondent'].location.location,
+            'location_type': language_type,
+            'language': language,
+            'device_type': device_type,
+        }
+        response['raw_response'] = None
+        response['question'] = {
+            'question_id': next_question.id,
+            'question_text': next_question.question.text,
+            'metrics': self.get_question_metrics(next_question.question)
         }
 
         return response
@@ -275,11 +297,13 @@ class HandleResponse(APIView):
         storer.store_response(parsed_request)
 
         # then we need to score the response
-        #next_question = scorer.score_response(parsed_request)
+        next_question = scorer.score_response(parsed_request)
 
         # format a new response based on the next question
 
-        return Response({'STATUS': 'NEXT QUESTION'})
+        if type(next_question) is not models.SurveyQuestion:
+            return Response(self.get_termination(next_question, parsed_request))
+        return Response(self.get_next_question(next_question, parsed_request))
 
 
 class LabelViewset(viewsets.ModelViewSet):
