@@ -39,7 +39,7 @@ def score_response(response):
                     if(operator["operator"] == "<"):
                         if (metric["value"] < sqr_argument["args_value"]):
                             potentials.append(sq_rule)
-                    if(operator["operator"] == "=" || operator["operator"] == "=="):
+                    if(operator["operator"] == "=" or operator["operator"] == "=="):
                         if (metric["value"] == sqr_argument["args_value"]):
                             potentials.append(sq_rule)
                     if(operator["operator"] == "<="):
