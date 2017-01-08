@@ -187,17 +187,16 @@ class Label(models.Model):
 
 class Question(models.Model):
 
-    question_id = models.CharField(max_length=255, primary_key=True)
-    question_text = models.CharField(max_length=255)
-    question_label = models.ForeignKey('Label')
+    title = models.CharField(max_length=50)
+    text = models.CharField(max_length=255)
     base_language = models.CharField(max_length=100)
     question_type = models.ForeignKey('QuestionType')
 
     def __unicode__(self):
-        return unicode(self.question_id)
+        return unicode(self.title)
 
     def __str__(self):
-        return str(self.question_id)
+        return str(self.title)
 
 
 class QuestionType(models.Model):
