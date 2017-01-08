@@ -267,7 +267,6 @@ class HandleResponse(APIView):
         return response
 
     def request_location(self, request):
-
         location_question = models.Question.objects.get(id=settings.LOCATION_QUESTION_ID)
 
         language = self.get_language(request.data)
@@ -298,7 +297,7 @@ class HandleResponse(APIView):
 
     def has_location(self, request):
 
-        location_in_request =  (
+        location_in_request = (
             'location' in request.data.keys()
             and 'location_type' in request.data.keys()
             and request.data['location'] is not None
@@ -312,9 +311,28 @@ class HandleResponse(APIView):
             _ = models.Respondent.objects.get(
                 respondent_id=request.data['respondent']['respondent_id']
             )
+            if _.location is None or _.location_type is None:
+                return False
             return True
         except ObjectDoesNotExist:
             return False
+
+    def get_same_question(self, data):
+
+        language = self.get_language(data)
+        location_type = self.get_location_type(data)
+        device_type = self.get_device_type(data)
+
+        response = data
+        response['respondent'] = {
+            'respondent_id': response['respondent'].respondent_id,
+            'location': response['respondent'].location.location,
+            'location_type': location_type,
+            'language': language,
+            'device_type': device_type,
+        }
+
+        return response
 
     def post(self, request):
 
@@ -331,7 +349,6 @@ class HandleResponse(APIView):
 
         # is this a new survey
         if self.is_new_survey(request):
-
             # determine which survey to return
             survey = self.get_next_survey(parsed_request['respondent'])
             if type(survey) is not models.Survey:
@@ -345,7 +362,7 @@ class HandleResponse(APIView):
         # if it isn't a new question, but we didn't get any response
         # respond with the same question
         if not self.got_a_response(request.data):
-            return Response(request.data)
+            return Response(self.get_same_question(request.data))
 
         # now we know that we actually need to process the response
         # first store the response metrics
@@ -357,6 +374,7 @@ class HandleResponse(APIView):
         # format a new response based on the next question
 
         if type(next_question) is not models.SurveyQuestion:
+            print 'here'
             return Response(self.get_termination(next_question, parsed_request))
         return Response(self.get_next_question(next_question, parsed_request))
 
