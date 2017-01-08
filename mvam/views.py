@@ -31,44 +31,106 @@ class HandleResponse(APIView):
         except KeyError:
             return True
 
+    def is_valid_request(self, request):
+
+        try:
+            _ = request.data['respondent']['respondent_id']
+            _ = request.data['timestamp']
+            _ = request.data['session_id']
+            return True
+        except KeyError:
+            return False
+
+    def get_respondent(self, request):
+
+        try:
+            respondent = models.Respondent.objects.get(
+                respondent_id=request.data['respondent']['respondent_id']
+            )
+        except ObjectDoesNotExist:
+            location = self.get_location(request.data['respondent'])
+            respondent = models.Respondent(
+                respondent_id=request.data['respondent']['respondent_id'],
+                location=location['location'],
+                location_type=location['location_type']
+            )
+            respondent.save()
+
+        return respondent
+
+    def get_location(self, data):
+
+        try:
+            request_location = data['location']
+            request_location_type = data['location_type']
+        except KeyError:
+            raise ParseError('location and location type are required')
+
+        location = models.Locations.objects.get_or_create(
+            location=request_location
+        )
+
+        location_type = models.LocationType.objects.get_or_create(
+            location_type=request_location_type
+        )
+
+        return {
+            'location': location[0],
+            'location_type': location_type[0]
+        }
+
+    def get_survey_question(self, request):
+
+        try:
+            survey_question = models.SurveyQuestion.objects.get(
+                id=request.data['question']['question_id']
+            )
+        except KeyError:
+            return None
+        except ObjectDoesNotExist:
+            raise ParseError('the question ID provided is invalid')
+
+    def parse_request(self, request):
+
+        parsed_request = request.data
+        parsed_request['respondent'] = self.get_respondent(request)
+        parsed_request['question']['question_id'] = self.get_survey_question(request)
+
+    def got_a_response(self, data):
+
+        try:
+            _ = data['raw_response']
+            _ = data['question']['question_id']
+            _ = data['question']['metrics']
+            return True
+        except KeyError:
+            return False
+
     def post(self, request):
+
+        if not self.is_valid_request(request):
+            raise ParseError(
+                'invalid request body'
+            )
+
+        parsed_request = self.parse_request(request)
 
         # is this a new survey
         if self.is_new_survey(request):
-
-            # do I have a location
-            try:
-                location = request.data['respondent']['location']
-            except KeyError:
-                return Response({'STATUS': 'NO LOCATION'})
-            # is demo required
 
             return Response({'STATUS': 'NEW SURVEY'})
 
         # if it isn't a new question, but we didn't get any response
         # respond with the same question
-        try:
-            raw_response = request.data['raw_response']
-            question_id = request.data['question']['question_id']
-            responses = request.data['question']['metrics']
-
-        # if we didn't actually get a response, we just respond with the same
-        # object
-        except KeyError:
+        if not self.got_a_response(request.data):
             return Response(request.data)
 
         # now we know that we actually need to process the response
         # first store the response metrics
-        storer.store_response(
-            question_id,
-            responses
-        )
+        storer.store_response(parsed_request)
 
         # then we need to score the response
-        next_question = scorer.score_response(
-            question_id,
-            responses
-        )
+        next_question = scorer.score_response(parsed_request)
 
         # format a new response based on the next question
 

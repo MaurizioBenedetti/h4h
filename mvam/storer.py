@@ -1,7 +1,7 @@
 from . import models
 
 
-def store_response(question_id, response):
+def store_response(response):
     """
 
     :param question_id: the id of the SurveyQuestion

@@ -1,7 +1,7 @@
 from . import models
 
 
-def score_response(question_id, response):
+def score_response(response):
     """
 
     :param question_id: the id of the SurveyQuestion
