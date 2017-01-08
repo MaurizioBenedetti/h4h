@@ -16,8 +16,16 @@ from rest_framework.exceptions import ValidationError, ParseError
 from django.http import Http404
 from rest_framework import status
 from mvam.serializers import *
+from rest_framework.views import APIView
 
 from . import serializers, models
+
+
+class HandleResponse(APIView):
+
+    def post(self, request):
+
+        return Response({'STATUS': 'OK'})
 
 
 class RespondentViewset(viewsets.ModelViewSet):
