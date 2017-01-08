@@ -219,6 +219,7 @@ class SurveyLabel(models.Model):
     def __str__(self):
         return str(self.id)
 
+
 class SurveyQuestionRule(models.Model):
 
     survey_question = models.ForeignKey('SurveyQuestion')
@@ -232,6 +233,7 @@ class SurveyQuestionRule(models.Model):
     def __str__(self):
         return str(self.id)
 
+
 class Operator(models.Model):
     operator = models.CharField(max_length=1)
 
@@ -240,6 +242,7 @@ class Operator(models.Model):
 
     def __str__(self):
         return str(self.id)
+
 
 class SurveyQuestionRulesArgument(models.Model):
 

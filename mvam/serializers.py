@@ -1,5 +1,5 @@
 from rest_framework.serializers import ModelSerializer, PrimaryKeyRelatedField
-from rest_framework_bulk import BulkListSerializer, BulkSerializerMixin
+from rest_framework import serializers
 
 from . import models
 
@@ -64,3 +64,35 @@ class SurveySerializer(ModelSerializer):
     class Meta:
         model = models.Survey
         fields = '__all__'
+
+
+class MetricResponseSerializer(ModelSerializer):
+
+    class Meta:
+        model = models.MetricResponse
+        fields = '__all__'
+
+class MessageRespondentField(serializers.DictField):
+    respondent_id = serializers.CharField(max_length=255)
+    location = serializers.CharField(max_length=255)
+    location_type = serializers.CharField(max_length=255)
+    language = serializers.CharField(max_length=255)
+    device_type = serializers.CharField(max_length=255)
+
+
+class MessageMetricsField(serializers.ListField):
+    child = MetricResponseSerializer()
+
+
+class MessageQuestionField(serializers.DictField):
+    question_id = serializers.IntegerField()
+    question_text = serializers.CharField(max_length=255)
+    metrics = MessageMetricsField()
+
+
+class MessageSerializer(serializers.Serializer):
+    timestamp = serializers.DateTimeField()
+    session_id = serializers.CharField(max_length=255)
+    respondent = MessageRespondentField()
+    raw_response = serializers.CharField(max_length=255)
+    question = MessageQuestionField()

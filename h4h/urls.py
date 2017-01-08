@@ -17,6 +17,7 @@ from django.conf.urls import url, include
 from django.contrib import admin
 from rest_framework import routers
 from mvam.urls import routes
+from mvam import views
 
 router = routers.DefaultRouter()
 for route in [routes]:
@@ -27,5 +28,5 @@ for route in [routes]:
 urlpatterns = [
     url(r'^api/', include(router.urls)),
     url(r'^admin/', admin.site.urls),
-
+    url(r'^api\/handlemessage', views.HandleResponse.as_view()),
 ]
