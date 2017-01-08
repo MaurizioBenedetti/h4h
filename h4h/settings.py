@@ -114,6 +114,8 @@ USE_TZ = True
 STATIC_URL = '/static/'
 STATIC_ROOT = 'static'
 
+LOCATION_QUESTION_ID = 3
+LOCATION_QUESTION_METRIC = 4
 
 DATABASES = {
     'default': {

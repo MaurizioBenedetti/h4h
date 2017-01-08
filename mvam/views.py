@@ -176,17 +176,17 @@ class HandleResponse(APIView):
         except AttributeError:
             return None
 
-    def get_language_type(self, request):
+    def get_location_type(self, request):
 
         try:
-            return request['respondent'].language_type.language_type
+            return request['respondent'].location_type.location_type
         except AttributeError:
             return None
 
     def get_termination(self, termination, request):
 
         language = self.get_language(request)
-        language_type = self.get_language_type(request)
+        language_type = self.get_location_type(request)
         device_type = self.get_device_type(request)
 
         response = request
@@ -223,7 +223,7 @@ class HandleResponse(APIView):
     def get_first_question(self, survey, request):
 
         language = self.get_language(request.data)
-        language_type = self.get_language_type(request.data)
+        language_type = self.get_location_type(request.data)
         device_type = self.get_device_type(request.data)
 
         response = request.data
@@ -246,14 +246,14 @@ class HandleResponse(APIView):
     def get_next_question(self, next_question, request):
 
         language = self.get_language(request)
-        language_type = self.get_language_type(request)
+        location_type = self.get_location_type(request)
         device_type = self.get_device_type(request)
 
         response = request
         response['respondent'] = {
             'respondent_id': response['respondent'].respondent_id,
             'location': response['respondent'].location.location,
-            'location_type': language_type,
+            'location_type': location_type,
             'language': language,
             'device_type': device_type,
         }
@@ -266,12 +266,56 @@ class HandleResponse(APIView):
 
         return response
 
+    def request_location(self, request):
+
+        location_question = models.Question.objects.get(id=settings.LOCATION_QUESTION_ID)
+
+        language = self.get_language(request.data)
+        device_type = self.get_device_type(request.data)
+
+        metric = models.Metric.objects.get(
+            id=settings.LOCATION_QUESTION_METRIC
+        )
+
+        response = request.data
+        response['respondent'] = {
+            'respondent_id': response['respondent']['respondent_id'],
+            'location': None,
+            'location_type': None,
+            'language': language,
+            'device_type': device_type,
+        }
+        response['raw_response'] = None
+        response['question'] = {
+            'question_id': location_question.id,
+            'question_text': location_question.text,
+            'metrics': [
+                {'metric_id': metric.id, 'metric_type': metric.metric_type.type}
+            ]
+        }
+
+        return response
+
+    def has_location(self, request):
+
+        return (
+            'location' in request.data.keys()
+            and 'location_type' in request.data.keys()
+            and request.data['location'] is not None
+            and request.data['location_type'] is not None
+        )
+
     def post(self, request):
 
         if not self.is_valid_request(request):
             raise ParseError(
                 'invalid request body'
             )
+
+        # check for location, get it if we don't have it
+        if not self.has_location(request):
+            return Response(self.request_location(request))
+
         parsed_request = self.parse_request(request)
 
         # is this a new survey
