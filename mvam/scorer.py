@@ -92,7 +92,6 @@ def score_response(response):
                             if str(_metric["metric_value"]) == str(arg.value):
                                 potentials.append(rule)
 
-
     if len(potentials) is 0:
         return TERMINATE
 
