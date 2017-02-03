@@ -1,0 +1,14 @@
+﻿AWSTemplateFormatVersion: '2010-09-09'
+Transform: 'AWS::Serverless-2016-10-31'
+Description: Searches and returns a session from the sessions db
+Resources:
+  getsession:
+    Type: 'AWS::Serverless::Function'
+    Properties:
+      Handler: lambda_function.lambda_handler
+      Runtime: python2.7
+      CodeUri: .
+      Description: Searches and returns a session from the sessions db
+      MemorySize: 128
+      Timeout: 300
+      Role: 'arn:aws:iam::213438495744:role/dynamo_session'
