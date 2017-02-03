@@ -2,6 +2,10 @@ from pymessenger.bot import Bot
 import requests
 import json
 import time
+import os
+
+MESSENGER_VALIDATION_TOKEN = os.getenv('MESSENGER_VALIDATION_TOKEN')
+ACCESS_TOKEN = os.getenv('ACCESS_TOKEN')
 
 def handler(event, context):
     #MESSENGER_VALIDATION_TOKEN = event["stage-variables"]["MESSENGER_VALIDATION_TOKEN"]
@@ -9,8 +13,7 @@ def handler(event, context):
     print(event)
     #print(context)
     #sqs = boto3.resource('sqs')
-    MESSENGER_VALIDATION_TOKEN = "mvamhackathon"
-    ACCESS_TOKEN = "EAAB7QsLXR40BAKpVWUGdNQbZC8HSxrZAWndaqOduklqZA7JEVqfDXYJwWwUSwZB5YsOYl3yhETw39MkYBhdaS25WR70CyjIZAZBfzsyzcOpjizuM5sOxH3OZC0o7ip6rKcBWamJrsFLo3BjTBSd05ieG8ec3qBOqnGw7jOrJZAo7ygZDZD"
+
     bot = Bot(ACCESS_TOKEN)
     method = event['context']['http-method']
     queryparams = event['params']['querystring']

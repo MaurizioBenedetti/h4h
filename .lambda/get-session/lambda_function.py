@@ -2,25 +2,15 @@ from __future__ import print_function # Python 2/3 compatibility
 import boto3
 from botocore.exceptions import ClientError
 import json, hashlib, requests, traceback
-'''tempEvent =  {
-    "messages":[{
-        "_id": "55c8c1498590aa1900b9b9b1",
-        "text": "Hi! hopeless",
-        "role": "appUser",
-        "authorId": "d7f6e6d6c3a637261bd9656f",
-        "name": "Steve",
-        "received": 1444348338.704,
-        "metadata": {},
-        "actions": [],
-        "source": {
-            "type": "messenger"
-        }
-    }]
-}'''
-
 import logging
+import os
+
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
+
+HANDLE_MESSAGE_API = os.getenv('HANDLE_MESSAGE_API')
+NLP_URL = os.getenv('NLP_URL')
+
 
 def get_session_status(session_id):
     dynamodb = boto3.resource('dynamodb', region_name="us-east-1", endpoint_url="https://dynamodb.us-east-1.amazonaws.com")
@@ -163,8 +153,7 @@ def close_session(session_id):
 def send_msg_backend(message):
     try:
         print("line {} data {}".format(145, str(json.dumps(message))))
-        handle_message_api = "http://h4h-api.48yn9m8g4b.us-east-1.elasticbeanstalk.com/api/handlemessage/"
-        r = requests.post(handle_message_api, json=message)
+        r = requests.post(HANDLE_MESSAGE_API, json=message)
         print("Status code from backend: {}\n r.reason: {}\n Response: {}".format(r.status_code, r.reason, r.json()))
         return r.json()
     except Exception as e:
@@ -174,8 +163,7 @@ def send_msg_backend(message):
 def send_msg_nlp(message):
     try:
         print ("message passed to nlp {}".format(message))
-        nlp_url = 'https://0qbp2vi3r5.execute-api.us-east-1.amazonaws.com/Stage/nlp/'
-        r = requests.post(nlp_url, json=message)
+        r = requests.post(NLP_URL, json=message)
         if r.status_code == 200:
             return r.json()
         else:

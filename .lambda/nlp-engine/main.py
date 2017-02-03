@@ -4,6 +4,11 @@ import re
 import json
 from text2num import text2num, NumberException
 from computer_vision import getImageTags
+import os
+
+YANDEX_KEY = os.getenv('YANDEX_KEY')
+WATSON_KEY = os.getenv('WATSON_KEY')
+
 
 class ParserException(Exception):
     def __init__(self, msg):
@@ -11,7 +16,7 @@ class ParserException(Exception):
 
 def translate(s):
     parameters = {
-        'key':'trnsl.1.1.20170108T012202Z.fa1a8d03eb8d33be.60cd4068fa2f37d75d11fad1906531974ce3ccdf',
+        'key': YANDEX_KEY,
         'lang':'en',
         'text': s
     }
@@ -32,7 +37,7 @@ def send_watson_request(raw_string, try_num=1, max_retries=3):
             raw_string))
 
     parameters = {
-            'apikey':'c2370ab6d5c04452c495be090688ef5a3e0093d2',
+            'apikey': WATSON_KEY,
             'outputMode':'json',
             'extract':'keywords,doc-sentiment,taxonomy,dates,entity',
             'sentiment':'0',
