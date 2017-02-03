@@ -6,6 +6,7 @@ import os
 
 MESSENGER_VALIDATION_TOKEN = os.getenv('MESSENGER_VALIDATION_TOKEN')
 ACCESS_TOKEN = os.getenv('ACCESS_TOKEN')
+ORCHESTRATOR_URL = os.getenv('ORCHESTRATOR_URL')
 
 def handler(event, context):
     #MESSENGER_VALIDATION_TOKEN = event["stage-variables"]["MESSENGER_VALIDATION_TOKEN"]
@@ -61,7 +62,8 @@ def handler(event, context):
                     #bot.send_text_message(recipient_id, message)
                     json_data = json.dumps(payload_data)
                     #bot.send_text_message(recipient_id, json_data)
-                    r = requests.post('https://p2prxjz2t3.execute-api.us-east-1.amazonaws.com/Production/get_session', data=json_data)
+                    r = requests.post(ORCHESTRATOR_URL, 
+                            data=json_data)
                     # You can now access identifiers and attributes
                     
                     bot.send_text_message(recipient_id, r.text)
