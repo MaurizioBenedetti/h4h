@@ -13,8 +13,11 @@ https://docs.djangoproject.com/en/1.10/ref/settings/
 import os
 from patch_env import patch_environment
 
-if 'USER' in os.environ and os.environ['USER'] is 'ec2-user':
+try:
+    print 'patching env'
     patch_environment()
+except TypeError:
+    pass
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
