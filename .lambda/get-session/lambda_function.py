@@ -1,285 +1,212 @@
 from __future__ import print_function # Python 2/3 compatibility
 import boto3
 from botocore.exceptions import ClientError
-import json, hashlib, requests, traceback
-'''tempEvent =  {
-    "messages":[{
-        "_id": "55c8c1498590aa1900b9b9b1",
-        "text": "Hi! hopeless",
-        "role": "appUser",
-        "authorId": "d7f6e6d6c3a637261bd9656f",
-        "name": "Steve",
-        "received": 1444348338.704,
-        "metadata": {},
-        "actions": [],
-        "source": {
-            "type": "messenger"
-        }
-    }]
-}'''
+import json, hashlib, requests, traceback, os
 
-import logging
-logger = logging.getLogger()
-logger.setLevel(logging.INFO)
+# set constants from env variables
+BACKEND_HOST = os.getenv('HANDLE_MESSAGE_API')
+NLP_HOST = os.getenv('NLP_URL')
+REPEAT_QUESTION = 'Sorry, I didn\'t understand that.  Could you please try again?'
+
+class NoResponseMetrics(Exception):
+    def __init__(self, msg):
+        Exception.__init__(self, msg)
 
 def get_session_status(session_id):
-    dynamodb = boto3.resource('dynamodb', region_name="us-east-1", endpoint_url="https://dynamodb.us-east-1.amazonaws.com")
 
-    table = dynamodb.Table('Session')
+    table = get_dynamo_table('Session')
+
     try:
         response = table.get_item(
-           Key={
-                'SessionID': session_id
-                }
+           Key={'SessionID': session_id}
         )
-        if 'Item' in response.keys():
-            return response['Item']['CurrentStatus']
-        else:
-            return None
-    except ClientError as e:
-        print(e.response['Error']['Message'])
-        return False
-    except Exception as e:
-        print(e)
-        return False
+        return 'Item' in response and 'CurrentStatus' in response['Item']
+
+    except ClientError:
+        raise ClientError(
+            '[InternalServerError] could not get session status'
+        )
+
 
 def get_session(session_id):
-    dynamodb = boto3.resource('dynamodb', region_name="us-east-1", endpoint_url="https://dynamodb.us-east-1.amazonaws.com")
 
-    table = dynamodb.Table('Session')
+    table = get_dynamo_table('Session')
+
     response = table.get_item(
        Key={
             'SessionID': session_id
-            }
+        }
     )
     if 'Item' in response.keys():
         return response
     else:
         return None
 
-def update_session(session_id, response_from_user):
-    dynamodb = boto3.resource('dynamodb', region_name="us-east-1", endpoint_url="https://dynamodb.us-east-1.amazonaws.com")
-    table = dynamodb.Table('Session')
+
+def persist_session(incoming_message, next_status='open'):
+
+    table = get_dynamo_table('Session')
+
     try:
-
-        response = table.update_item(
-        Key={
-            'SessionID': session_id
-        },
-        UpdateExpression="set SessionData = :d, CurrentStatus = :c",
-        ExpressionAttributeValues={
-            ':d': json.dumps(response_from_user),
-            ':c': "updated"
-        },
-        ReturnValues="UPDATED_NEW"
+        return table.update_item(
+            Key={
+                'SessionID': incoming_message['respondent']['respondent_hash']
+            },
+            UpdateExpression="set SessionData = :d, CurrentStatus = :c",
+            ExpressionAttributeValues={
+                ':d': json.dumps(incoming_message),
+                ':c': next_status
+            },
+            ReturnValues='ALL_NEW'
+        )['Attributes']
+    except KeyError:
+        raise KeyError(
+            '[BadRequest] authorId is required'
         )
-        return "response"
-    except ClientError as e:
-        print (e.response['Error']['Message'])
-        return False
-    except Exception as e:
-        print(e)
-        return False
-
-def update_raw_response(session_id, raw_response):
-    print("Inside update_raw_response: {} | {}".format(session_id, raw_response))
-    dynamodb = boto3.resource('dynamodb', region_name="us-east-1", endpoint_url="https://dynamodb.us-east-1.amazonaws.com")
-    table = dynamodb.Table('Session')
-
-    session_to_update = get_session(session_id)
-    print("Session to update: {}".format(session_to_update))
-    sessionData = session_to_update['Item']['SessionData']
-    s = json.loads(sessionData)
-    print("Session we're looking to update: {}".format(s))
-    s['raw_response'] = raw_response
-
-    response = table.update_item(
-    Key={
-        'SessionID': session_id
-    },
-    UpdateExpression="set SessionData = :d",
-    ExpressionAttributeValues={
-        ':d': json.dumps(s)
-    },
-    ReturnValues="UPDATED_NEW"
-    )
-
-    print("update_raw_response successful: {}".format(session_to_update))
-    
-        
-def create_session(session_id, response_from_user):
-    dynamodb = boto3.resource('dynamodb', region_name="us-east-1", endpoint_url="https://dynamodb.us-east-1.amazonaws.com")
-    table = dynamodb.Table('Session')
-    try:
-        response = table.put_item(
-            Item={
-            'SessionID' : session_id,
-            'CurrentStatus': "New",
-            'SessionData': json.dumps(response_from_user)
-            }
+    except ClientError:
+        raise ClientError(
+            '[InternalServerError] could not create/update session object'
         )
-    except ClientError as e:
-        print (e.response['Error']['Message'])
-        return False
-    except Exception as e:
-        print(e)
-        return False
 
-def serial(event):
-    # TODO implement
-    timestamp = event['messages'][0]['received']
-    respondent_id = event['messages'][0]['authorId']
-    device_type = event['messages'][0]['source']['type']
-    raw_response = event['messages'][0]['text']
 
-    response_payload = {
-        "timestamp": timestamp,
-        "respondent":
+def get_dynamo_table(table):
+    return boto3.resource(
+        'dynamodb',
+        region_name="us-east-1",
+        endpoint_url="https://dynamodb.us-east-1.amazonaws.com"
+    ).Table(table)
+
+
+def normalize_json_schema(event):
+    """
+    Parses the raw event from the message gateway into a json
+    object to be used by the rest of the orchestrator
+
+    Attributes:
+        event: the raw event message from the gateway
+
+    Raises:
+        KeyError: throws bad request error if the event is missing a required
+            key
+    """
+
+    def get_message_key_or_400(key):
+        try:
+            return event['messages'][0][key]
+        except (KeyError, IndexError):
+            raise KeyError(
+                '[BadRequest] key {} is required'.format(key)
+            )
+
+    return {
+        'timestamp': get_message_key_or_400('received'),
+        'respondent':
         {
-            "respondent_id": respondent_id, 
-            "device_type": device_type
+            'respondent_id': get_message_key_or_400('authorId'),
+            'respondent_hash': hashlib.sha256(
+                get_message_key_or_400('authorId')
+            ).hexdigest(),
+            "device_type": get_message_key_or_400('type')
         },
-        "raw_response": raw_response
+        "raw_response": get_message_key_or_400('text')
     }
 
-    return response_payload
 
 def close_session(session_id):
-    dynamodb = boto3.resource('dynamodb', region_name="us-east-1", endpoint_url="https://dynamodb.us-east-1.amazonaws.com")
-    table = dynamodb.Table('Session')
+    table = get_dynamo_table('Session')
+
     try:
         response = table.delete_item(
-                Key={
-                    'SessionID':session_id
-                }
-            )
+            Key={'SessionID': session_id}
+        )
         return response
-    except ClientError as e:
-        if e.response['Error']['Code'] == "ConditionalCheckFailedException":
-            print(e.response['Error']['Message'])
-        else:
-            raise  
+    except ClientError:
+        raise ClientError(
+            '[InternalServerError] unable to delete session'
+        )
 
-def send_msg_backend(message):
-    try:
-        print("line {} data {}".format(145, str(json.dumps(message))))
-        handle_message_api = "http://h4h-api.48yn9m8g4b.us-east-1.elasticbeanstalk.com/api/handlemessage/"
-        r = requests.post(handle_message_api, json=message)
-        print("Status code from backend: {}\n r.reason: {}\n Response: {}".format(r.status_code, r.reason, r.json()))
-        return r.json()
-    except Exception as e:
-        print(e)
-        return False
+
+def get_next_response(message):
+    r = requests.post(BACKEND_HOST, json=message)
+    return r.json()
+
 
 def send_msg_nlp(message):
-    try:
-        print ("message passed to nlp {}".format(message))
-        nlp_url = 'https://0qbp2vi3r5.execute-api.us-east-1.amazonaws.com/Stage/nlp/'
-        r = requests.post(nlp_url, json=message)
-        if r.status_code == 200:
-            return r.json()
+
+    r = requests.post(NLP_HOST, json=message)
+    if r.status_code == 200:
+        return r.json()
+    elif r.status_code == 500:
+        raise NoResponseMetrics(
+            'could not parse metrics from NLP'
+        )
+
+
+def merge_dicts(dict1, dict2):
+    for key in dict2:
+        if (
+            key in dict1 and
+            isinstance(dict1[key], dict) and
+            isinstance(dict2[key], dict)
+        ):
+            merge_dicts(dict1[key], dict2[key])
         else:
-            print(r.status_code)
-            return message
-    except Exception as e:
-        print(e)
-        return False
-
-def process_msg(be_msg, serialized_msg):
-    serialized_msg['question'] = {}
-    serialized_msg['respondent'] = {}
+            dict1[key] = dict2[key]
 
 
-    print("Before processing message back-end: {}".format(be_msg))
-
-    if "question_id" in be_msg['question'].keys():
-        serialized_msg['question']['question_id'] = be_msg['question']['question_id']
-        
-    if "metrics" in be_msg['question'].keys():
-        serialized_msg['question']['metrics'] = be_msg['question']['metrics']
-
-    if 'question' in be_msg.keys():
-        serialized_msg['question']['question_text'] = be_msg['question']['question_text']
-
-    if 'respondent' in be_msg.keys():
-        serialized_msg['respondent']['language']= be_msg['respondent']['language']
-        serialized_msg['respondent']['location']= be_msg['respondent']['location']
-        serialized_msg['respondent']['location_type']= be_msg['respondent']['location_type']
-    
-    print("After processing message: {}".format(serialized_msg))
-    return serialized_msg
-               
 def lambda_handler(event, context):
-    json_ser = serial(event)
-   
-    try:
-        respondent_hash = hashlib.sha256(json_ser['respondent']['respondent_id']).hexdigest()
-        #check status of session
-        session_status = get_session_status(respondent_hash)
+    incoming_message = normalize_json_schema(event)
 
-        # if session is non existant
-        if session_status is None:
-            print("Creating a brand new session!")
-            #generate session obj and create it
-            json_ser['SessionID'] = respondent_hash
-            create_session(respondent_hash, json_ser)
-           
-            #send session obj to BE
-            r = send_msg_backend(json_ser)
+    # get a has of the respondent's id and check to see if there is an
+    # existing session
+    respondent_hash = incoming_message['respondent']['respondent_hash']
+    session_exists = get_session_status(respondent_hash)
 
-            json_ser = process_msg(r, json_ser)
-            update_session(respondent_hash, json_ser)
-            print(json_ser['question'])
 
-            #TODO: Send question to the user
-            return json_ser['question']['question_text']
-            
-        # if sessions is existant
-        else:
-            print("Found an existing session.")
-            # TODO: Call backend with response & question id to get metrics types
-            update_raw_response(respondent_hash, json_ser['raw_response'])
-            session = get_session(respondent_hash)
-            print("Existing session: {}".format(session))
-            try:
-                if "TERMINATE" in session['on_next']:
-                    close_session(respondent_hash)
-            except KeyError:
-                print("Existing session found for respondent: {}".format(respondent_hash))
+    # if this is a new session, get the first question
+    # and create a new session
+    if not session_exists:
+        print("Creating a brand new session!")
 
-                #call nlp to add values
-                r_nlp = send_msg_nlp(json.loads(session['Item']['SessionData']))
-                print("response from nlp api: {}".format(json.dumps(r_nlp)))
+        # get next response to user from backend
+        merge_dicts(incoming_message, get_next_response(incoming_message))
+        persist_session(incoming_message)
 
-                #send msg to backend
+        return incoming_message['question']['question_text']
 
-                r_be = send_msg_backend(r_nlp)
-                print('response from back end: {}'.format(json.dumps(r_be)))
+    # if this is not a new session, route the question response
+    # to the NLP for parsing then get next question from backend
+    else:
+        print('Found an existing session.')
 
-                #update json
-                json_ser =process_msg(r_be, session)
-                print('normalized responses to be put in sessiondb: {}'.format(json_ser))
+        session = persist_session(incoming_message)
+        print('session: {}'.format(session))
 
-                #update session status
-                update_session(respondent_hash, json_ser)
-                print('message to be sent to user: {}'.format(json_ser['question']))
-                return json_ser['question']
-                
-            # TODO: Once we have type, pass it off to NLP to get Type, Value, Confidence
+        try:
+            if 'TERMINATE' in session['on_next']:
+                close_session(respondent_hash)
+                return
 
-            #update_session_status(respondent_hash, json_ser)
+        # no on_next in session
+        except KeyError:
+            pass
 
-            # TODO: Get next question fromb back end 
-            # TODO: Which end point gives us next question?
-            #x = get_session_status(respondent_hash)
+        # call nlp to add values
+        try:
+            r_nlp = send_msg_nlp(session)
+        except NoResponseMetrics:
+            return REPEAT_QUESTION
+        print('response from nlp api: {}'.format(json.dumps(r_nlp)))
 
-            # TODO: Push to output SQS queue
+        #send msg to backend
+        r_be = get_next_response(r_nlp)
+        print('response from back end: {}'.format(json.dumps(r_be)))
 
-            #return r
+        # update json
+        merge_dicts(session, r_be)
+        print('normalized responses to be put in sessiondb: {}'.format(incoming_message))
 
-    except AttributeError as e:
-        print("Exception: {} Stacktrace: {}".format(e, traceback.print_exc()))
-        return False
-    except Exception as e:
-        print(e)
-        return False
+        #update session status
+        persist_session(respondent_hash, incoming_message)
+        print('message to be sent to user: {}'.format(incoming_message['question']))
+        return incoming_message['question']

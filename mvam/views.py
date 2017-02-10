@@ -405,7 +405,6 @@ class HandleResponse(APIView):
         next_question = scorer.score_response(parsed_request)
 
         # format a new response based on the next question
-
         if type(next_question) is not models.SurveyQuestion:
             print 'here'
             return Response(self.get_termination(next_question, parsed_request))
