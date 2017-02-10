@@ -1,10 +1,16 @@
-import httplib, urllib, base64, json
+import httplib
+import urllib
+import base64
+import json
+import os
+
+PROJECTOXFORD_KEY = os.getenv('PROJECTOXFORD_KEY')
 
 def getImageTags(photo_file):
     headers = {
         # Request headers
         'Content-Type': 'application/octet-stream',
-        'Ocp-Apim-Subscription-Key': 'fe1ddf67faa347b1847318f516e6065f',
+        'Ocp-Apim-Subscription-Key': PROJECTOXFORD_KEY,
     }
 
     params = urllib.urlencode({

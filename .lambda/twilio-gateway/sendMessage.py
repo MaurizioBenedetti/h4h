@@ -1,9 +1,10 @@
 from twilio.rest import TwilioRestClient
+import os
 # put your own credentials here
 #ACCOUNT_SID = "SKb0bd8533115b1bc1f11ec488f6b2d395"
 #AUTH_TOKEN = "Y8K16bvxjp0dFTuWL73ccncsTsRx9Czj"
-ACCOUNT_SID = "AC373af54372b22c5a2a101e6419f833e1"
-AUTH_TOKEN = "f9055d78c46088aaa337f9651d789e07"
+ACCOUNT_SID = os.getenv('TWILIO_ACCOUNT_SID') 
+AUTH_TOKEN = os.getenv('TWILIO_ACCOUNT_TOKEN')
 
 
 def handler(event, context):
