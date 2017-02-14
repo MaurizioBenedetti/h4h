@@ -4,13 +4,14 @@ from botocore.exceptions import ClientError
 import json, hashlib, requests, traceback, os
 
 # set constants from env variables
-BACKEND_HOST = os.getenv('HANDLE_MESSAGE_API')
-NLP_HOST = os.getenv('NLP_URL')
+BACKEND_HOST = os.getenv('BACKEND_HOST')
+NLP_HOST = os.getenv('NLP_HOST')
 REPEAT_QUESTION = 'Sorry, I didn\'t understand that.  Could you please try again?'
 
 class NoResponseMetrics(Exception):
     def __init__(self, msg):
         Exception.__init__(self, msg)
+
 
 def get_session_status(session_id):
 
@@ -91,12 +92,24 @@ def normalize_json_schema(event):
     """
 
     def get_message_key_or_400(key):
-        try:
-            return event['messages'][0][key]
-        except (KeyError, IndexError):
-            raise KeyError(
-                '[BadRequest] key {} is required'.format(key)
-            )
+
+        if type(key) is str:
+            try:
+                return event['messages'][0][key]
+            except (KeyError, IndexError):
+                raise KeyError(
+                    '[BadRequest] key {} is required'.format(key)
+                )
+        if type(key) is list:
+            curr_object = event['messages'][0]
+            for current_key in key:
+                try:
+                    curr_object = curr_object[current_key]
+                except KeyError:
+                    raise KeyError(
+                        '[BadRequest] key {} not found'.format(current_key)
+                    )
+            return curr_object
 
     return {
         'timestamp': get_message_key_or_400('received'),
@@ -106,7 +119,7 @@ def normalize_json_schema(event):
             'respondent_hash': hashlib.sha256(
                 get_message_key_or_400('authorId')
             ).hexdigest(),
-            "device_type": get_message_key_or_400('type')
+            "device_type": get_message_key_or_400(['source', 'type'])
         },
         "raw_response": get_message_key_or_400('text')
     }
@@ -128,6 +141,7 @@ def close_session(session_id):
 
 def get_next_response(message):
     r = requests.post(BACKEND_HOST, json=message)
+    print r
     return r.json()
 
 
@@ -172,6 +186,8 @@ def lambda_handler(event, context):
         merge_dicts(incoming_message, get_next_response(incoming_message))
         persist_session(incoming_message)
 
+        print(incoming_message)
+
         return incoming_message['question']['question_text']
 
     # if this is not a new session, route the question response
@@ -207,6 +223,6 @@ def lambda_handler(event, context):
         print('normalized responses to be put in sessiondb: {}'.format(incoming_message))
 
         #update session status
-        persist_session(respondent_hash, incoming_message)
+        persist_session(incoming_message)
         print('message to be sent to user: {}'.format(incoming_message['question']))
         return incoming_message['question']

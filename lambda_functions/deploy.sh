@@ -2,7 +2,7 @@
 
 DEPLOYMENT_ZIP='all_lambda_functions.zip'
 
-SOURCE_CODE_FOLDERS_ARRAY=('get-session' 'facebook-gateway' 'nlp-engine' 'twilio-gateway')
+SOURCE_CODE_FOLDERS_ARRAY=('get_session' 'facebook_gateway' 'nlp_engine' 'twilio_gateway')
 SOURCE_CODE_FOLDERS_STRING=${SOURCE_CODE_FOLDERS_ARRAY[*]// ' '}
 
 DEPENDENCY_FOLDERS_ARRAY=('requests' 'pymessenger' 'requests_toolbelt' 'six.py')
@@ -16,15 +16,17 @@ rm -f $DEPLOYMENT_ZIP
 # create symlinks to virutal environment for pip dependencies
 for DEP in "${DEPENDENCY_FOLDERS_ARRAY[@]}"
 do
-	ln -s ../venv/lib/python2.7/site-packages/$DEP $DEP
-	echo 
+    rm ./$DEP
+	ln -s $VIRTUAL_ENV/lib/python2.7/site-packages/$DEP $DEP
+	echo "ln -s $VIRTUAL_ENV/lib/python2.7/site-packages/$DEP ./$DEP"
 done
 
 # package source and dependencies together
-zip -r $DEPLOYMENT_ZIP $DEPENDENCY_FOLDERS_STRING $SOURCE_CODE_FOLDERS_STRING
+echo $DEPLOYMENT_ZIP $DEPENDENCY_FOLDERS_STRING $SOURCE_CODE_FOLDERS_STRING
+zip -r $DEPLOYMENT_ZIP $DEPENDENCY_FOLDERS_STRING $SOURCE_CODE_FOLDERS_STRING __init__.py
 
 # update all lambda functions with the same zip file
 for FUNC in "${AWS_LAMBDA_FUNCTION_NAMES[@]}"
 do 
-	aws lambda update-function-code --function-name $FUNC --zip-file fileb://$PWD/$DEPLOYMENT_ZIP
+	aws lambda update-function-code --profile hackathon --function-name $FUNC --zip-file fileb://$PWD/$DEPLOYMENT_ZIP
 done

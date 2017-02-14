@@ -1,18 +1,111 @@
 import requests
-import datetime
 import re
 import json
-from text2num import text2num, NumberException
-from computer_vision import getImageTags
 import os
+import httplib
+import urllib
 
 YANDEX_KEY = os.getenv('YANDEX_KEY')
 WATSON_KEY = os.getenv('WATSON_KEY')
 
 
+Small = {
+    'zero': 0,
+    'one': 1,
+    'two': 2,
+    'three': 3,
+    'four': 4,
+    'five': 5,
+    'six': 6,
+    'seven': 7,
+    'eight': 8,
+    'nine': 9,
+    'ten': 10,
+    'eleven': 11,
+    'twelve': 12,
+    'thirteen': 13,
+    'fourteen': 14,
+    'fifteen': 15,
+    'sixteen': 16,
+    'seventeen': 17,
+    'eighteen': 18,
+    'nineteen': 19,
+    'twenty': 20,
+    'thirty': 30,
+    'forty': 40,
+    'fifty': 50,
+    'sixty': 60,
+    'seventy': 70,
+    'eighty': 80,
+    'ninety': 90
+}
+Magnitude = {
+    'thousand':     1000,
+    'million':      1000000,
+    'billion':      1000000000,
+    'trillion':     1000000000000,
+    'quadrillion':  1000000000000000,
+    'quintillion':  1000000000000000000,
+    'sextillion':   1000000000000000000000,
+    'septillion':   1000000000000000000000000,
+    'octillion':    1000000000000000000000000000,
+    'nonillion':    1000000000000000000000000000000,
+    'decillion':    1000000000000000000000000000000000,
+}
+
+class NumberException(Exception):
+    def __init__(self, msg):
+        Exception.__init__(self, msg)
+
+def text2num(s):
+    a = re.split(r"[\s-]+", s)
+    n = 0
+    g = 0
+    for w in a:
+        x = Small.get(w, None)
+        if x is not None:
+            g += x
+        elif w == "hundred" and g != 0:
+            g *= 100
+        else:
+            x = Magnitude.get(w, None)
+            if x is not None:
+                n += g * x
+                g = 0
+            else:
+                raise NumberException("Unknown number: "+w)
+    return n + g
+
+PROJECTOXFORD_KEY = os.getenv('PROJECTOXFORD_KEY')
+
+def getImageTags(photo_file):
+    headers = {
+        # Request headers
+        'Content-Type': 'application/octet-stream',
+        'Ocp-Apim-Subscription-Key': PROJECTOXFORD_KEY,
+    }
+
+    params = urllib.urlencode({
+    })
+
+    with open(photo_file, 'rb') as image:
+        image_data = image.read()
+
+    try:
+        conn = httplib.HTTPSConnection('api.projectoxford.ai')
+        conn.request("POST", "/vision/v1.0/tag?%s" % params, image_data, headers)
+        response = conn.getresponse()
+        data = json.loads(response.read().decode("utf-8"))
+        conn.close()
+        return data['tags']
+    except Exception as e:
+        print("[Errno {0}] {1}".format(e.errno, e.strerror))
+
+
 class ParserException(Exception):
     def __init__(self, msg):
         Exception.__init__(self, msg)
+
 
 def translate(s):
     parameters = {
@@ -62,6 +155,7 @@ def send_watson_request(raw_string, try_num=1, max_retries=3):
     else:
         return response.json()
 
+
 def get_number(response):
     num_list = re.findall('\d+', response)
     if num_list:
@@ -84,6 +178,7 @@ def get_number(response):
             response))
     return {'metric_value': num_list, 'confidence': None}
 
+
 def get_sentiment(response):
     alchemy_result = send_watson_request(response) 
     try:
@@ -91,6 +186,7 @@ def get_sentiment(response):
     except KeyError:
         result_sentiment = 0
     return {'metric_value': result_sentiment, 'confidence': None}    
+
 
 def get_entities(response):
     alchemy_result = send_watson_request(response) 
@@ -101,10 +197,12 @@ def get_entities(response):
     result_confidence = ",".join([keyword["relevance"] for keyword in alchemy_result["keywords"]])
     return {'metric_value': result_value, 'confidence': result_confidence}
 
+
 def get_dates(response):
     alchemy_result = send_watson_request(response) 
     result_value = ",".join([date["date"] for date in alchemy_result["dates"]])
     return [result_value, None]
+
 
 def get_geo(response):
     alchemy_result = send_watson_request(response)
@@ -115,6 +213,7 @@ def get_geo(response):
     except IndexError:
         raise ParserException("cannot parse geo information. input: {}".format(
             response))
+
 
 def get_binary(response):
     # FROM THESAURUS.COM
@@ -142,7 +241,7 @@ def get_binary(response):
         return {'metric_value': return_val, 'confidence': None}
 
 
-def lambda_handler(event,context):
+def lambda_handler(event, context):
   raw_response = event["raw_response"]
   
   metrics_calls = {

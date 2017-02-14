@@ -25,6 +25,7 @@
 
 import re
 
+
 Small = {
     'zero': 0,
     'one': 1,
@@ -55,7 +56,6 @@ Small = {
     'eighty': 80,
     'ninety': 90
 }
-
 Magnitude = {
     'thousand':     1000,
     'million':      1000000,
