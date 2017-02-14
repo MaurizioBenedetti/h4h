@@ -141,7 +141,7 @@ def close_session(session_id):
 
 def get_next_response(message):
     r = requests.post(BACKEND_HOST, json=message)
-    print r
+    print(r)
     return r.json()
 
 
