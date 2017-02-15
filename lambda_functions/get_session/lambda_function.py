@@ -23,9 +23,10 @@ def get_session_status(session_id):
         )
         return 'Item' in response and 'CurrentStatus' in response['Item']
 
-    except ClientError:
-        raise ClientError(
-            '[InternalServerError] could not get session status'
+    except ClientError as e:
+        raise Exception(
+                '[InternalServerError] could not get session status: {}'.format(
+                    e.response['Error']['Code'])
         )
 
 
@@ -142,7 +143,7 @@ def close_session(session_id):
 def get_next_response(message):
     print(message)
     r = requests.post(BACKEND_HOST, json=message)
-    print(r)
+    print(r.status_code, r.reason)
     return r.json()
 
 
@@ -227,6 +228,6 @@ def lambda_handler(event, context):
         print('normalized responses to be put in sessiondb: {}'.format(incoming_message))
 
         #update session status
-        persist_session(incoming_message)
-        print('message to be sent to user: {}'.format(incoming_message['question']))
-        return incoming_message['question']
+        persist_session(session)
+        print('message to be sent to user: {}'.format(session['question']['question_text']))
+        return session['question']['question_text']
