@@ -201,7 +201,7 @@ def get_entities(response):
 def get_dates(response):
     alchemy_result = send_watson_request(response) 
     result_value = ",".join([date["date"] for date in alchemy_result["dates"]])
-    return [result_value, None]
+    return {'metric_value': result_value, 'confidence': None}
 
 
 def get_geo(response):
@@ -261,8 +261,10 @@ def lambda_handler(event, context):
   for metric in event["question"]["metrics"]:
     metric_id = metric["metric_id"]
     metric_type = metric["metric_type"]
+    print('fetching metric type: {}'.format(metric_type))
     result = metrics_calls[metric_type](raw_response)
-    
+    print('result: {}'.format(result))
+
     # populate different fields for geo
     if metric_type == 'geo':
         final_result['respondent']['location'] = result['location']
