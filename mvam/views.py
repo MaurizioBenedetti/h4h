@@ -43,7 +43,7 @@ class HandleResponse(APIView):
         try:
             _ = request.data['respondent']['respondent_id']
             _ = request.data['timestamp']
-            _ = request.data['respondent']['respondent_hash']
+            _ = request.data['respondent']['session_id']
             return True
         except KeyError:
             return False

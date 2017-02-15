@@ -51,7 +51,7 @@ def persist_session(incoming_message, next_status='open'):
     try:
         return table.update_item(
             Key={
-                'SessionID': incoming_message['respondent']['respondent_hash']
+                'SessionID': incoming_message['respondent']['session_id']
             },
             UpdateExpression="set SessionData = :d, CurrentStatus = :c",
             ExpressionAttributeValues={
@@ -116,7 +116,7 @@ def normalize_json_schema(event):
         'respondent':
         {
             'respondent_id': get_message_key_or_400('authorId'),
-            'respondent_hash': hashlib.sha256(
+            'session_id': hashlib.sha256(
                 get_message_key_or_400('authorId')
             ).hexdigest(),
             "device_type": get_message_key_or_400(['source', 'type'])
@@ -174,8 +174,8 @@ def lambda_handler(event, context):
 
     # get a has of the respondent's id and check to see if there is an
     # existing session
-    respondent_hash = incoming_message['respondent']['respondent_hash']
-    session_exists = get_session_status(respondent_hash)
+    session_id = incoming_message['respondent']['session_id']
+    session_exists = get_session_status(session_id)
 
 
     # if this is a new session, get the first question
@@ -201,7 +201,7 @@ def lambda_handler(event, context):
 
         try:
             if 'TERMINATE' in session['on_next']:
-                close_session(respondent_hash)
+                close_session(session_id)
                 return
 
         # no on_next in session
