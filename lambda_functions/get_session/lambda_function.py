@@ -39,7 +39,7 @@ def get_session(session_id):
         }
     )
     if 'Item' in response.keys():
-        return response
+        return json.loads(response['Item']['SessionData'])
     else:
         return None
 
@@ -49,7 +49,7 @@ def persist_session(incoming_message, next_status='open'):
     table = get_dynamo_table('Session')
 
     try:
-        return table.update_item(
+        return json.loads(table.update_item(
             Key={
                 'SessionID': incoming_message['respondent']['session_id']
             },
@@ -59,7 +59,7 @@ def persist_session(incoming_message, next_status='open'):
                 ':c': next_status
             },
             ReturnValues='ALL_NEW'
-        )['Attributes']
+        )['Attributes']['SessionData'])
     except KeyError:
         raise KeyError(
             '[BadRequest] authorId is required'
@@ -148,6 +148,7 @@ def get_next_response(message):
 
 def send_msg_nlp(message):
 
+    print(message)
     r = requests.post(NLP_HOST, json=message)
     if r.status_code == 200:
         return r.json()
@@ -196,7 +197,9 @@ def lambda_handler(event, context):
     else:
         print('Found an existing session.')
 
-        session = persist_session(incoming_message)
+        session = get_session(session_id)
+        merge_dicts(session, incoming_message)
+        session = persist_session(session)
         print('session: {}'.format(session))
 
         try:

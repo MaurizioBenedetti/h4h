@@ -130,17 +130,18 @@ def send_watson_request(raw_string, try_num=1, max_retries=3):
             raw_string))
 
     parameters = {
-            'apikey': WATSON_KEY,
-            'outputMode':'json',
-            'extract':'keywords,doc-sentiment,taxonomy,dates,entity',
-            'sentiment':'0',
-            'maxRetrieve':'5',
-            'text':raw_string
+        'apikey': WATSON_KEY,
+        'outputMode': 'json',
+        'extract': 'keywords,doc-sentiment,taxonomy,dates,entity',
+        'sentiment': '0',
+        'maxRetrieve': '5',
+        'text': raw_string
     }
 
     response = requests.post(
-            'https://gateway-a.watsonplatform.net/calls/text/TextGetCombinedData',
-            data=parameters)
+        'https://gateway-a.watsonplatform.net/calls/text/TextGetCombinedData',
+        data=parameters
+    )
     if response.status_code != 200:
         msg = "bad request. code: {} reason: {}".format(
             response.status_code, response.reason)
@@ -148,6 +149,8 @@ def send_watson_request(raw_string, try_num=1, max_retries=3):
             msg))
 
     formatted_response = response.json()
+
+    print(formatted_response)
 
     if formatted_response['language'] != 'english':
         translated_text = translate(raw_string)
@@ -242,9 +245,10 @@ def get_binary(response):
 
 
 def lambda_handler(event, context):
-  raw_response = event["raw_response"]
+    print(event)
+    raw_response = event["raw_response"]
   
-  metrics_calls = {
+    metrics_calls = {
     'yesNoMaybe': get_binary,
     'numeric': get_number,
     'sentiment': get_sentiment,
@@ -255,13 +259,13 @@ def lambda_handler(event, context):
     'geo': get_geo,
   }
   
-  metric_response = []
-  final_result = event.copy()
+    metric_response = []
+    final_result = event.copy()
 
-  for metric in event["question"]["metrics"]:
-    metric_id = metric["metric_id"]
-    metric_type = metric["metric_type"]
-    result = metrics_calls[metric_type](raw_response)
+    for metric in event["question"]["metrics"]:
+        metric_id = metric["metric_id"]
+        metric_type = metric["metric_type"]
+        result = metrics_calls[metric_type](raw_response)
     
     # populate different fields for geo
     if metric_type == 'geo':
@@ -274,6 +278,6 @@ def lambda_handler(event, context):
             'metric_value': result.get('metric_value'), 
             'confidence': result.get('confidence')}) 
 
-  final_result["question"]["metrics"] = metric_response
-  return final_result
+    final_result["question"]["metrics"] = metric_response
+    return final_result
 
