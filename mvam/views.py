@@ -276,6 +276,9 @@ class HandleResponse(APIView):
         return response
 
     def request_location(self, request):
+
+        print('getting location question')
+
         location_question = models.Question.objects.get(id=settings.LOCATION_QUESTION_ID)
 
         language = self.get_language(request.data)
@@ -367,6 +370,8 @@ class HandleResponse(APIView):
             return Response(self.request_location(request))
 
         parsed_request = self.parse_request(request)
+
+        print parsed_request
 
         # handle response to geo question
 
