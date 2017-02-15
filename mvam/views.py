@@ -221,10 +221,16 @@ class HandleResponse(APIView):
 
     def get_first_survey_question(self, survey):
 
-        return models.SurveyQuestion.objects.filter(
-            survey=survey,
-            question=survey.first_question
-        )[0]
+        try:
+            return models.SurveyQuestion.objects.filter(
+                survey=survey,
+                question=survey.first_question
+            )[0]
+        except IndexError:
+            raise ParseError(
+                'no survey question for survey "{}", question "{}"'
+                .format(survey, survey.first_question)
+            )
 
     def get_first_question(self, survey, request):
 
