@@ -15,16 +15,20 @@ def store_response(response):
     timestamp = response["timestamp"]
     respondent = response["respondent"]
     raw_response = response["raw_response"]
-    question = response["question"]["question_id"]
+    question_id = response["question"]["question_id"]
     session_id = response["session_id"]
 
+    question = models.SurveyQuestion.objects.get(
+        id=question_id
+    )
+
     res = models.Response(
-        timestamp = timestamp,
-        respondent = respondent,
-        raw_response = raw_response,
-        question = question,
-        survey = question.survey,
-        session_id = session_id
+        timestamp=timestamp,
+        respondent=respondent,
+        raw_response=raw_response,
+        question=question.question,
+        survey=question.survey,
+        session_id=session_id
     )
 
     res.save()
