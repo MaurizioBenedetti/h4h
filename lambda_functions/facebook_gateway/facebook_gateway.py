@@ -9,37 +9,24 @@ ACCESS_TOKEN = os.getenv('ACCESS_TOKEN')
 ORCHESTRATOR_URL = os.getenv('ORCHESTRATOR_URL')
 
 def handler(event, context):
-    #MESSENGER_VALIDATION_TOKEN = event["stage-variables"]["MESSENGER_VALIDATION_TOKEN"]
-    #ACCESS_TOKEN = event["stage-variables"]["PAGE_ACCESS_TOKEN"]
-    print(event)
-    #print(context)
-    #sqs = boto3.resource('sqs')
 
     bot = Bot(ACCESS_TOKEN)
     method = event['context']['http-method']
     queryparams = event['params']['querystring']
     if method == "GET":
         if queryparams['hub.verify_token'] == MESSENGER_VALIDATION_TOKEN:
-            return queryparams['hub.challenge']
+            return int(queryparams['hub.challenge'])
         else:
             return "Incorrect verify token"
-    #print(event)
-    #queue = sqs.get_queue_by_name(QueueName='inbound')
-    #response = queue.send_message(MessageBody='Test Message to SQS')
-    
-    #bot.send_text_message(recipient_id, message)
-    for event in event['body-json']['entry']:
-        messaging = event['messaging']
+
+    for e in event['body-json']['entry']:
+        messaging = e['messaging']
         for x in messaging:
             if x.get('message'):
-                recipient_id = x['sender']['id']
-                print(recipient_id)
+                recipient_id = x['message']['sender']['id']
                 if x['message'].get('text'):
                     message = x['message']['text']
-                    
-                    # Get the queue. This returns an SQS.Queue instance
-                    #queue = sqs.get_queue_by_name(QueueName='inbound')
-                    
+
                     session_id = '1234567890'
                     payload_data = {}
                     payload_data['messages'] = []
@@ -56,31 +43,22 @@ def handler(event, context):
 
                     payload_data['messages'].append(content_data)
 
-                    print(message)
-                    #payload_data = self.payload(recipient_id, message)
-                    #bot.send_text_message(recipient_id, message)
-                    #bot.send_text_message(recipient_id, message)
-                    json_data = json.dumps(payload_data)
-                    #bot.send_text_message(recipient_id, json_data)
-                    r = requests.post(ORCHESTRATOR_URL, 
-                            data=json_data)
-                    # You can now access identifiers and attributes
-                    
+                    r = requests.post(ORCHESTRATOR_URL, json=payload_data)
+
                     bot.send_text_message(recipient_id, r.text)
-                    bot.send_text_message(recipient_id, r.status)
+                    bot.send_text_message(recipient_id, r.status_code)
+
                     try:
                         response_data = r.json()
                         response_content = response_data['messages'][0]['text']
                         print(response_content)
                         bot.send_text_message(recipient_id, response_content)
-                    except:
-                        print(r.text)
+                    except Exception:
                         bot.send_text_message(recipient_id, r.text)
                         pass
 
-                    #print(queue.url)
-                    #print(queue.attributes.get('DelaySeconds'))
                 if x['message'].get('attachments'):
                     for att in x['message'].get('attachments'):
                         bot.send_attachment_url(recipient_id, att['type'], att['payload']['url'])
+
     return "Success"
