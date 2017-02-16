@@ -22,7 +22,7 @@ def store_response(response):
         timestamp = timestamp,
         respondent = respondent,
         raw_response = raw_response,
-        question = question.question,
+        question = question,
         survey = question.survey,
         session_id = session_id
     )

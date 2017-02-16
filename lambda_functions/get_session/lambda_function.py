@@ -117,7 +117,7 @@ def normalize_json_schema(event):
         {
             'respondent_id': get_message_key_or_400('authorId'),
             'session_id': hashlib.sha256(
-                get_message_key_or_400('authorId')
+                get_message_key_or_400('_id')
             ).hexdigest(),
             "device_type": get_message_key_or_400(['source', 'type'])
         },
@@ -148,7 +148,6 @@ def get_next_response(message):
 
 def send_msg_nlp(message):
 
-    print(message)
     r = requests.post(NLP_HOST, json=message)
     if r.status_code == 200:
         return r.json()
@@ -171,6 +170,11 @@ def merge_dicts(dict1, dict2):
 
 
 def lambda_handler(event, context):
+
+    print(
+        'got a new message: {}'.format(event)
+    )
+
     incoming_message = normalize_json_schema(event)
 
     # get a has of the respondent's id and check to see if there is an
@@ -206,7 +210,6 @@ def lambda_handler(event, context):
             if 'TERMINATE' in session['on_next']:
                 close_session(session_id)
                 return
-
         # no on_next in session
         except KeyError:
             pass
@@ -227,6 +230,6 @@ def lambda_handler(event, context):
         print('normalized responses to be put in sessiondb: {}'.format(incoming_message))
 
         #update session status
-        persist_session(incoming_message)
-        print('message to be sent to user: {}'.format(incoming_message['question']))
-        return incoming_message['question']
+        session = persist_session(session)
+        print('message to be sent to user: {}'.format(session['question']['question_text']))
+        return incoming_message['question']['question_text']

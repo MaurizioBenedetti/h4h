@@ -1,6 +1,5 @@
 from pymessenger.bot import Bot
 import requests
-import json
 import time
 import os
 
@@ -8,7 +7,12 @@ MESSENGER_VALIDATION_TOKEN = os.getenv('MESSENGER_VALIDATION_TOKEN')
 ACCESS_TOKEN = os.getenv('ACCESS_TOKEN')
 ORCHESTRATOR_URL = os.getenv('ORCHESTRATOR_URL')
 
+
 def handler(event, context):
+
+    print(
+        'received event: {}'.format(event)
+    )
 
     bot = Bot(ACCESS_TOKEN)
     method = event['context']['http-method']
@@ -19,19 +23,18 @@ def handler(event, context):
         else:
             return "Incorrect verify token"
 
+    print('method: POST')
     for e in event['body-json']['entry']:
         messaging = e['messaging']
         for x in messaging:
             if x.get('message'):
-                recipient_id = x['message']['sender']['id']
+                recipient_id = x['sender']['id']
                 if x['message'].get('text'):
                     message = x['message']['text']
-
-                    session_id = '1234567890'
                     payload_data = {}
                     payload_data['messages'] = []
                     content_data = {}
-                    content_data['_id'] = session_id
+                    content_data['_id'] = e['id']
                     content_data['text'] = message
                     content_data['authorId'] = recipient_id
                     content_data['name'] = 'unknown'
@@ -43,19 +46,24 @@ def handler(event, context):
 
                     payload_data['messages'].append(content_data)
 
+                    print(
+                        'sending message to orchestrator: {}'
+                        .format(payload_data)
+                    )
+
                     r = requests.post(ORCHESTRATOR_URL, json=payload_data)
 
-                    bot.send_text_message(recipient_id, r.text)
-                    bot.send_text_message(recipient_id, r.status_code)
+                    print(
+                        'got response from orchestrator: {} {}'
+                        .format(r.status_code, r.json())
+                    )
 
-                    try:
-                        response_data = r.json()
-                        response_content = response_data['messages'][0]['text']
-                        print(response_content)
-                        bot.send_text_message(recipient_id, response_content)
-                    except Exception:
-                        bot.send_text_message(recipient_id, r.text)
-                        pass
+                    fb_response = bot.send_text_message(recipient_id, r.json())
+
+                    print(
+                        'got response from facebook: {}'
+                        .format(fb_response)
+                    )
 
                 if x['message'].get('attachments'):
                     for att in x['message'].get('attachments'):
