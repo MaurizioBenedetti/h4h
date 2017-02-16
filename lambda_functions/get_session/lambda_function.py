@@ -232,4 +232,4 @@ def lambda_handler(event, context):
         #update session status
         session = persist_session(session)
         print('message to be sent to user: {}'.format(session['question']['question_text']))
-        return incoming_message['question']['question_text']
+        return session['question']['question_text']
