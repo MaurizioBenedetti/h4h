@@ -114,7 +114,7 @@ class Occupation(models.Model):
 
 
 class Operator(models.Model):
-    operator = models.CharField(max_length=1)
+    operator = models.CharField(max_length=2)
 
     def __unicode__(self):
         return unicode(self.operator)
