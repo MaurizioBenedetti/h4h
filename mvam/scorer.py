@@ -34,7 +34,6 @@ def score_response(response):
 
 
     survey_question = response['question']['question_id']
-    question = response['question']['question_id'].question
 
 
     # sift out inactive SurveyQuestionRules
