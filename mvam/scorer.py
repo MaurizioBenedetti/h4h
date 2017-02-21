@@ -67,6 +67,11 @@ def score_response(response):
                 if _metric["metric_id"] == arg.metric.id:
 
                     print('type: {}'.format(metric.metric_type.format))
+                    print('{} - {} - {}'.format(
+                        str(_metric["metric_value"]),
+                        str(arg.operator.operator),
+                        str(arg.value))
+                    )
                     if metric.metric_type.format == 'N':
                         print 'numeric'
                         if arg.operator.operator == ">":
@@ -88,6 +93,8 @@ def score_response(response):
                         if arg.operator.operator == ">=":
                             if _metric["metric_value"] >= int(arg.value):
                                 potentials.append(rule)
+                        if arg.operator.operator == "*":
+                            potentials.append(rule)
 
                     if metric.metric_type.format == 'S':
                         if arg.operator.operator == "~":
@@ -96,6 +103,8 @@ def score_response(response):
                         if arg.operator.operator == "=":
                             if str(_metric["metric_value"]) == str(arg.value):
                                 potentials.append(rule)
+                        if arg.operator.operator == "*":
+                            potentials.append(rule)
 
     if len(potentials) is 0:
         return TERMINATE

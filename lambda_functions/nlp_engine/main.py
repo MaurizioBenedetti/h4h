@@ -247,7 +247,7 @@ def get_binary(response):
 def lambda_handler(event, context):
     print(event)
     raw_response = event["raw_response"]
-  
+
     metrics_calls = {
     'yesNoMaybe': get_binary,
     'numeric': get_number,
@@ -258,7 +258,7 @@ def lambda_handler(event, context):
     'image': getImageTags,
     'geo': get_geo,
   }
-  
+
     metric_response = []
     final_result = event.copy()
 
@@ -267,18 +267,18 @@ def lambda_handler(event, context):
         metric_type = metric["metric_type"]
         print('fetching metric type: {}'.format(metric_type))
         result = metrics_calls[metric_type](raw_response)
-    print('result: {}'.format(result))
+        print('result: {}'.format(result))
 
-    # populate different fields for geo
-    if metric_type == 'geo':
-        final_result['respondent']['location'] = result['location']
-        final_result['respondent']['location_type'] = result['location_type']
+        # populate different fields for geo
+        if metric_type == 'geo':
+            final_result['respondent']['location'] = result['location']
+            final_result['respondent']['location_type'] = result['location_type']
 
-    else:
-        metric_response.append({'metric_id': metric_id, 
-            'metric_type': metric_type, 
-            'metric_value': result.get('metric_value'), 
-            'confidence': result.get('confidence')}) 
+        else:
+            metric_response.append({'metric_id': metric_id,
+                'metric_type': metric_type,
+                'metric_value': result.get('metric_value'),
+                'confidence': result.get('confidence')})
 
     final_result["question"]["metrics"] = metric_response
     return final_result
