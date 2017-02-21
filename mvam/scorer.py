@@ -61,8 +61,12 @@ def score_response(response):
                 except ObjectDoesNotExist:
                     raise ParseError('bad metric id')
 
+                print('_metric: {}'.format(_metric))
+                print('metric: {}').format(metric)
+
                 if _metric["metric_id"] == arg.metric.id:
 
+                    print('type: {}'.format(metric.metric_type.format))
                     if metric.metric_type.format == 'N':
                         print 'numeric'
                         if arg.operator.operator == ">":

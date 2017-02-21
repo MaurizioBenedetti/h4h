@@ -399,14 +399,21 @@ class HandleResponse(APIView):
 
         # now we know that we actually need to process the response
         # first store the response metrics
-        storer.store_response(parsed_request)
+        try:
+            storer.store_response(parsed_request)
+
+        # normally this is a terrible idea, but we really want to make
+        # sure that we get to the next question to improve user experience
+        except Exception as e:
+            print(
+                'failed to store response with error: {}'.format(e)
+            )
 
         # then we need to score the response
         next_question = scorer.score_response(parsed_request)
 
         # format a new response based on the next question
         if type(next_question) is not models.SurveyQuestion:
-            print 'here'
             return Response(self.get_termination(next_question, parsed_request))
         return Response(self.get_next_question(next_question, parsed_request))
 
