@@ -2,6 +2,7 @@ from . import models
 from django.core.exceptions import ObjectDoesNotExist
 from rest_framework.exceptions import ValidationError, ParseError
 
+
 def get_question_rules(question):
 
     print question
