@@ -249,7 +249,7 @@ class SurveyQuestionRulesArgument(models.Model):
     survey_question_rules = models.ForeignKey('SurveyQuestionRule')
     metric = models.ForeignKey('Metric')
     operator = models.ForeignKey('operator') #operator table
-    value = models.IntegerField()
+    value = models.CharField(max_length=50)
 
     def __unicode__(self):
         return unicode(self.id)

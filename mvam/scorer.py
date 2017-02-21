@@ -70,23 +70,23 @@ def score_response(response):
                     if metric.metric_type.format == 'N':
                         print 'numeric'
                         if arg.operator.operator == ">":
-                            if _metric["metric_value"] > arg.value:
+                            if _metric["metric_value"] > int(arg.value):
                                 potentials.append(rule)
 
                         if arg.operator.operator == "<":
-                            if _metric["metric_value"] < arg.value:
+                            if _metric["metric_value"] < int(arg.value):
                                 potentials.append(rule)
 
                         if arg.operator.operator == "=":
-                            if _metric["metric_value"] == arg.value:
+                            if _metric["metric_value"] == int(arg.value):
                                 potentials.append(rule)
 
                         if arg.operator.operator == "<=":
-                            if _metric["metric_value"] <= arg.value:
+                            if _metric["metric_value"] <= int(arg.value):
                                 potentials.append(rule)
 
                         if arg.operator.operator == ">=":
-                            if _metric["metric_value"] >= arg.value:
+                            if _metric["metric_value"] >= int(arg.value):
                                 potentials.append(rule)
 
                     if metric.metric_type.format == 'S':
