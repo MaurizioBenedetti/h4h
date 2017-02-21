@@ -85,10 +85,10 @@ def score_response(response):
                                 potentials.append(rule)
 
                     if metric.metric_type.format == 'S':
-                        if arg.operator.operator == "contains":
+                        if arg.operator.operator == "~":
                             if str(_metric["metric_value"]) in str(arg.value):
                                 potentials.append(rule)
-                        if arg.operator.operator == "equals":
+                        if arg.operator.operator == "=":
                             if str(_metric["metric_value"]) == str(arg.value):
                                 potentials.append(rule)
 
