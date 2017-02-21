@@ -58,6 +58,11 @@ class NumberException(Exception):
         Exception.__init__(self, msg)
 
 def text2num(s):
+
+    print(
+        'converting {} to number'.format(s)
+    )
+
     a = re.split(r"[\s-]+", s)
     n = 0
     g = 0
@@ -171,9 +176,11 @@ def get_number(response):
               return num_list
             except NumberException:
               print('number exception when converting text to num')
+
     num_list = convert_string_to_num(response)
+    print('num_list: {}'.format(num_list))
     if num_list:
-        return num_list
+        return {'metric_value': num_list, 'confidence': None}
     translated_response = translate(response)
     num_list = convert_string_to_num(translated_response)
     if not num_list:
