@@ -11,7 +11,7 @@ To get started, you will need the following:
 - the [awscli](https://aws.amazon.com/cli/) and [awsebcli](http://docs.aws.amazon.com/elasticbeanstalk/latest/dg/eb-cli3-install.html) installed on your development machine
 
 ### Deploying the Backend
-The backend API, also called the orchestration layer, is a [Django](https://www.djangoproject.com/) application and is meant to be deployed on Amazon's [Elastic Beanstalk](https://aws.amazon.com/elasticbeanstalk/) service.  To deploy the base application:
+The backend API is responsible for serving survey questions, storing responses, and routing from one question to the next.  The business logic lives here.  The API is a Python application, leverages the [Django](https://www.djangoproject.com/) application framework, and is meant to be deployed on Amazon's [Elastic Beanstalk](https://aws.amazon.com/elasticbeanstalk/) service.  To deploy the base application:
 #### 1. clone this repo to your local development machine
 ```
 $ cd /path/to/your/dev/directory/
@@ -41,7 +41,7 @@ Starting development server at http://0.0.0.0:8000/
 Quit the server with CONTROL-C.
 ```
 If the application does not start, check the error message in your terminal; you are likely missing a dependency.  Once started, you should see a listing of all the available api endpoints when you navigate to the [root page](http://localhost:8000/api/).  At this point, you are ready to deploy to Elastic Beanstalk
-#### 5. creating the beanstalk environment
+#### 5. create the beanstalk environment
 Before getting started, you might want to familiarize yourself with [this](http://docs.aws.amazon.com/elasticbeanstalk/latest/dg/create-deploy-python-django.html) tutorial, which explains how to deploy a Django application on Elastic Beanstalk.  We're already done most of this stuff for you, so you can basically skip to [deploying the site](http://docs.aws.amazon.com/elasticbeanstalk/latest/dg/create-deploy-python-django.html#python-django-deploy).  To do so, you'll want to initialize a new environment using the commands:
 ```
 $(h4h) eb init -p python2.7 h4h
@@ -58,3 +58,28 @@ $(h4h) eb deploy
 ```
 At this point, the backend is setup and ready to go.  You can modify the code as you see fit and re-deploy as above.  For production, we recomend that you have at least two instances behind the load balancer to ensure stable service.
 
+### Deploying the Orchestrator
+The Orchestrator is responsible for routing messages between the chat clients, the backend APIs, and the NLP engine.  It is a single AWS Lambda function written in Python, and is attached to API Gateway for communication with other components.
+#### 1. Deploying the lambda function
+TODO: write this section
+#### 2. Configuring the API Gateway
+TODO: write this section
+
+### Deploying the NLP Engine
+The NLP engine takes raw survey responses from end users and translates them to machine-readable metrics.  It is a single AWS Lambda function written in Python, leverages the IBM Watson NLP APIs, and is attached to the API Gateway for communication with other components.
+### 1. Setting up the Watson Integration
+TODO: write this section
+### 2. Deploying the lambda function
+TODO: write this section
+### 3. Configuring the API Gateway
+TODO: write this section
+
+### Deploying the Facebook Messenger Bot
+As an example, this repository includes a chatbot adapter for Facebook Messenger, which can be used as a template for other chat clients.  It is a single AWS Lambda function written in Python, and is attached to the API Gateway for communication with the outside world and other components
+TODO: complete this section
+
+### Connecting the Components
+TODO: write this section
+
+### Writing a Test Survey
+TODO: write this section
